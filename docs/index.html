@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FAF8F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
+<title>Ritual Log</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <div class="row1">
+      <span class="brand">Ritual Log</span>
+      <span id="clock" class="tnum">--:--</span>
+    </div>
+    <h1 id="dateline" class="title">…</h1>
+    <div id="datesub" class="micro muted"></div>
+    <nav class="tabs" id="tabs" role="tablist">
+      <button data-tab="hoy" aria-selected="true">Hoy</button>
+      <button data-tab="ritual" aria-selected="false">Ritual</button>
+      <button data-tab="resumen" aria-selected="false">Resumen</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="view-hoy">
+    <div id="hoy-banner"></div>
+    <div id="ritual-cards"></div>
+    <div class="card">
+      <div class="card-head"><span class="k">Objetivos de la semana</span></div>
+      <div id="goals"></div>
+    </div>
+  </section>
+
+  <section id="view-ritual" hidden>
+    <div class="card">
+      <div class="card-head">
+        <span class="k" id="rv-kicker">Ritual</span>
+        <span class="spacer"></span>
+        <span id="rv-state" class="badge n">local</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <h2 id="rv-title" class="display" style="flex:1"></h2>
+        <span id="rv-pct" class="badge n">0%</span>
+      </div>
+      <div id="rv-sub" class="caption muted" style="margin-top:6px"></div>
+      <div class="row" id="rv-switch"></div>
+    </div>
+    <div class="card">
+      <ul class="steps" id="steps"></ul>
+      <div id="steps-empty" class="empty" hidden></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="k">Algo que hiciste</span><span class="spacer"></span>
+        <span class="micro muted">queda en el registro</span></div>
+      <div id="extras"></div>
+      <div class="row">
+        <input type="text" id="x-text" placeholder="p. ej. lavadora, compra, llamada…">
+        <input type="number" id="x-min" class="fixed" style="max-width:84px" placeholder="min" min="1">
+        <button class="b sm fixed" id="x-add">Añadir</button>
+      </div>
+    </div>
+    <div class="card" id="rv-tools">
+      <div class="card-head"><span class="k">Run</span></div>
+      <div class="row">
+        <button class="b sm" id="rv-finish">Terminar run</button>
+        <button class="b sm ghost" id="rv-abandon">Abandonar</button>
+      </div>
+      <div class="micro muted" style="margin-top:10px">Un ritual tiene un solo run activo. Terminarlo o abandonarlo cierra el de hoy; el historial no se sobrescribe.</div>
+    </div>
+  </section>
+
+  <section id="view-resumen" hidden>
+    <div class="card">
+      <div class="card-head"><span class="k">Resumen del run</span><span class="spacer"></span><span id="sum-state" class="badge n"></span></div>
+      <div id="summary"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="k">Compartir</span></div>
+      <textarea class="log" id="log-day" spellcheck="false"></textarea>
+      <div class="row">
+        <button class="b primary" id="copy-day">Copiar</button>
+        <button class="b" id="send-day" hidden>Enviar a #schedule</button>
+      </div>
+      <div class="micro muted" style="margin-top:10px" id="send-note"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="k">Historial de runs</span><span class="spacer"></span><span class="micro muted">read-only</span></div>
+      <ul class="plain" id="history"></ul>
+      <div id="history-empty" class="empty" hidden></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="k">Ajustes</span></div>
+      <div id="settings"></div>
+      <div class="row">
+        <button class="b sm" id="backup">Copiar respaldo</button>
+        <button class="b sm" id="restore">Restaurar</button>
+        <button class="b sm ghost" id="wipe">Borrar los datos de este dispositivo</button>
+      </div>
+      <div class="micro muted" style="margin-top:10px" id="state-info"></div>
+    </div>
+  </section>
+  <footer>Ritual Log · inspirado en Mini Rituals · <a href="https://github.com/RoAlfonsin/ritual-log">repo</a></footer>
+</main>
+
+<div id="moment"><div class="bloom">
+  <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+</div></div>
+<div class="toast" id="toast"></div>
+<script src="config.js" onerror="window.__WEBHOOK__=undefined"></script>
+<script>window.__errs=[];window.addEventListener('error',e=>window.__errs.push((e.message||'')+' @'+(e.lineno||'')));window.addEventListener('unhandledrejection',e=>window.__errs.push('rej:'+(e.reason&&e.reason.message||e.reason)));</script>
+<script src="app.js"></script>
+</body>
+</html>

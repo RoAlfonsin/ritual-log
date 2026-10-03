@@ -1,0 +1,41 @@
+name: Deploy Ritual Log to Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The webhook is injected at build time from a repo secret so it is never
+      # committed. With no secret the app falls back to copy-and-paste.
+      - name: Inject runtime config
+        env:
+          SCHEDULE_WEBHOOK: ${{ secrets.SCHEDULE_WEBHOOK }}
+        run: |
+          printf 'window.__WEBHOOK__ = "%s";\n' "$SCHEDULE_WEBHOOK" > docs/config.js
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

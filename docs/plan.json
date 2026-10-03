@@ -1,0 +1,301 @@
+{
+  "updated": "2026-10-02T21:18:38-06:00",
+  "source": {
+    "week_file": "/home/ro/.hermes/state/schedule/weeks/2026-W40.md",
+    "life_file": "/home/ro/.hermes/state/life/weeks/2026-W40.md"
+  },
+  "week": {
+    "iso": "2026-W40",
+    "label": "Semana 40",
+    "start": "2026-09-28",
+    "end": "2026-10-04",
+    "reserve_saturday": false
+  },
+  "rituals": {
+    "day": {
+      "title": "Día",
+      "order_mode": "sequential",
+      "steps": [
+        {
+          "id": "read",
+          "title": "Leer (+ café al final)",
+          "start": "06:30",
+          "end": "07:20",
+          "minutes": 50
+        },
+        {
+          "id": "cleaning",
+          "title": "Limpieza",
+          "start": "07:20",
+          "end": "08:30",
+          "minutes": 70
+        },
+        {
+          "id": "exercise-meditation",
+          "title": "Ejercicio + meditación",
+          "start": "08:30",
+          "end": "09:30",
+          "minutes": 60
+        },
+        {
+          "id": "breakfast",
+          "title": "Desayuno (cocinar + comer)",
+          "start": "09:30",
+          "end": "10:10",
+          "minutes": 40
+        },
+        {
+          "id": "shower-grooming",
+          "title": "Ducha + aseo",
+          "start": "10:10",
+          "end": "10:30",
+          "minutes": 20
+        },
+        {
+          "id": "work-a",
+          "title": "Trabajo A",
+          "start": "10:30",
+          "end": "13:30",
+          "minutes": 180,
+          "kind": "work"
+        },
+        {
+          "id": "cook-dinner",
+          "title": "Cocinar + cena (+ trastes)",
+          "start": "13:30",
+          "end": "15:30",
+          "minutes": 120
+        },
+        {
+          "id": "work-b",
+          "title": "Trabajo B",
+          "start": "15:30",
+          "end": "19:00",
+          "minutes": 210,
+          "kind": "work"
+        },
+        {
+          "id": "journaling",
+          "title": "Journaling",
+          "start": "19:00",
+          "end": "19:30",
+          "minutes": 30
+        },
+        {
+          "id": "rest",
+          "title": "Descanso (juegos, Netflix, lectura)",
+          "start": "19:30",
+          "end": "21:30",
+          "minutes": 120
+        },
+        {
+          "id": "lights-out",
+          "title": "Apagar luces",
+          "start": "21:30",
+          "end": null,
+          "minutes": null
+        }
+      ]
+    },
+    "week": {
+      "title": "Semana",
+      "order_mode": "free",
+      "steps": [
+        {
+          "id": "sweep-vacuum-1-3",
+          "title": "Sweep + vacuum (1/3)",
+          "optional": true
+        },
+        {
+          "id": "sweep-vacuum-2-3",
+          "title": "Sweep + vacuum (2/3)",
+          "optional": true
+        },
+        {
+          "id": "sweep-vacuum-3-3",
+          "title": "Sweep + vacuum (3/3)",
+          "optional": true
+        },
+        {
+          "id": "mop-floors",
+          "title": "Mop floors",
+          "optional": true
+        },
+        {
+          "id": "change-bedsheets",
+          "title": "Change bedsheets",
+          "optional": true
+        },
+        {
+          "id": "bathroom-toilet-sink-shower",
+          "title": "Bathroom — toilet, sink, shower",
+          "optional": true
+        },
+        {
+          "id": "trash-out-1-3",
+          "title": "Trash out (1/3)",
+          "optional": true
+        },
+        {
+          "id": "trash-out-2-3",
+          "title": "Trash out (2/3)",
+          "optional": true
+        },
+        {
+          "id": "trash-out-3-3",
+          "title": "Trash out (3/3)",
+          "optional": true
+        },
+        {
+          "id": "shave-1-3",
+          "title": "Shave (1/3)",
+          "optional": true
+        },
+        {
+          "id": "shave-2-3",
+          "title": "Shave (2/3)",
+          "optional": true
+        },
+        {
+          "id": "shave-3-3",
+          "title": "Shave (3/3)",
+          "optional": true
+        },
+        {
+          "id": "hand-nails-1-1",
+          "title": "Hand nails (1/1)",
+          "optional": true
+        },
+        {
+          "id": "exfoliate-1-1",
+          "title": "Exfoliate (1/1)",
+          "optional": true
+        },
+        {
+          "id": "laundry-1-put-in",
+          "title": "Laundry 1 — put in",
+          "optional": true
+        },
+        {
+          "id": "laundry-1-hang-out",
+          "title": "Laundry 1 — hang out",
+          "optional": true
+        },
+        {
+          "id": "laundry-1-arrange",
+          "title": "Laundry 1 — arrange",
+          "optional": true
+        },
+        {
+          "id": "laundry-2-put-in",
+          "title": "Laundry 2 — put in",
+          "optional": true
+        },
+        {
+          "id": "laundry-2-hang-out",
+          "title": "Laundry 2 — hang out",
+          "optional": true
+        },
+        {
+          "id": "laundry-2-arrange",
+          "title": "Laundry 2 — arrange",
+          "optional": true
+        },
+        {
+          "id": "laundry-3-put-in",
+          "title": "Laundry 3 — put in",
+          "optional": true
+        },
+        {
+          "id": "laundry-3-hang-out",
+          "title": "Laundry 3 — hang out",
+          "optional": true
+        },
+        {
+          "id": "laundry-3-arrange",
+          "title": "Laundry 3 — arrange",
+          "optional": true
+        },
+        {
+          "id": "full-litter-sand-change-due-this-week",
+          "title": "Full litter sand change  ⟵ due this week",
+          "optional": true
+        },
+        {
+          "id": "dusting-appliance-cleaning-ad-hoc-only-what-you-flag",
+          "title": "Dusting / appliance cleaning — ad hoc, only what you flag",
+          "optional": true
+        }
+      ]
+    }
+  },
+  "days": {
+    "2026-09-28": {
+      "work_a": "iCare 1.1–1.2.1",
+      "work_b": "Upwork — 2 items live",
+      "anchors": [
+        "Mon Mamá + Papá"
+      ]
+    },
+    "2026-09-29": {
+      "work_a": "iCare 1.3–1.6",
+      "work_b": "Mini Rituales 01+02 (legacy repo)",
+      "anchors": [
+        "Tue Moni + Nona"
+      ]
+    },
+    "2026-09-30": {
+      "work_a": "iCare 1.7  (#55)",
+      "work_b": "Iván 18:30",
+      "anchors": []
+    },
+    "2026-10-01": {
+      "work_a": "Mini Rituales — M1-01…M1-10, M1-12, M1-18",
+      "work_b": "Upwork",
+      "anchors": [
+        "Thu Alexa"
+      ]
+    },
+    "2026-10-02": {
+      "work_a": "iCare — merge #56, then 1.11",
+      "work_b": "Mini Rituales — M1-11 + M1-13",
+      "anchors": []
+    },
+    "2026-10-03": {
+      "work_a": null,
+      "work_b": null,
+      "anchors": []
+    },
+    "2026-10-04": {
+      "work_a": null,
+      "work_b": null,
+      "anchors": []
+    }
+  },
+  "goals": [
+    {
+      "project": "iCare",
+      "headline": "Fase 1",
+      "detail": "Fase 1 8/13; #56 open, 1.11 unstarted.",
+      "status": "at_risk"
+    },
+    {
+      "project": "Mini Rituales",
+      "headline": "Milestone 1",
+      "detail": "M1 12/19; 7 tickets open, no block left.",
+      "status": "at_risk"
+    },
+    {
+      "project": "Upwork",
+      "headline": "one application a day",
+      "detail": "cadence held; app out, 5 live, 0 replies.",
+      "status": "on_track"
+    }
+  ],
+  "anchors": [
+    "Mon Mamá + Papá",
+    "Tue Moni + Nona",
+    "Thu Alexa",
+    "Mon 5 Oct 18:00 Mauricio"
+  ]
+}
