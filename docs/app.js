@@ -293,14 +293,36 @@ function weekProgress() {
 }
 
 /* ---------- mutations ---------- */
+/* A step's time is kept as segments so a pause/resume reads honestly: the window it
+   was actually worked in, and the active total — not one long span that includes the
+   hours it sat paused. */
+function openSegment(s, now) {
+  if (!s.segments) s.segments = [];
+  if (!s.segments.some(x => x.to == null)) s.segments.push({ from: now, to: null });
+  if (!s.firstStartedAt) s.firstStartedAt = now;
+}
+function closeSegment(s, now) {
+  if (!s.segments) s.segments = [];
+  s.segments.forEach(x => { if (x.to == null) x.to = now; });
+}
+function splitsText(s, fallbackStart) {
+  const segs = ((s && s.segments) || []).filter(x => x && x.from != null && x.to != null);
+  if (segs.length) {
+    const shown = segs.slice(0, 3).map(x => D.hhmm(x.from) + '–' + D.hhmm(x.to));
+    return shown.join(' + ') + (segs.length > 3 ? ' (+' + (segs.length - 3) + ')' : '');
+  }
+  if (fallbackStart) return D.hhmm(fallbackStart) + '–' + D.hhmm(Date.now());
+  return null;
+}
 function startStep(ritual, id) {
   const run = getRunFor(ritual);
   const now = Date.now();
   const cur = activeStepId(run);
   if (cur === id) return;
-  if (cur) { const c = run.steps[cur]; c.seconds = (c.seconds || 0) + (now - c.startedAt) / 1000; c.status = 'pending'; c.startedAt = null; c.ts = now; }
+  if (cur) { const c = run.steps[cur]; c.seconds = (c.seconds || 0) + (now - c.startedAt) / 1000; c.status = 'pending'; c.startedAt = null; closeSegment(c, now); c.ts = now; }
   const s = run.steps[id] || (run.steps[id] = { seconds: 0 });
   s.status = 'active'; s.startedAt = now; s.completedAt = null; s.skipped = false; s.ts = now;
+  openSegment(s, now);
   if (!run.startedAt) run.startedAt = now;
   run.status = 'active'; run.ts = now;
   save(); haptic('light'); markDirty(); renderAll();
@@ -314,13 +336,15 @@ function completeStep(ritual, id, skipped = false) {
   if (s.status === 'active' && s.startedAt) s.seconds = (s.seconds || 0) + (now - s.startedAt) / 1000;
   s.status = skipped ? 'skipped' : 'completed';
   s.skipped = skipped; s.completedAt = now; s.startedAt = null; s.ts = now;
+  closeSegment(s, now);
+  if (!s.firstStartedAt) s.firstStartedAt = startedAt || now;
   if (!run.startedAt) run.startedAt = now;
   const el = stepElapsed(run, id);
   const allDone = (ritual.steps || []).every(x => ['completed', 'skipped'].indexOf(stepStatus(run, x.id)) >= 0);
   if (allDone) { run.status = 'completed'; run.endedAt = now; run.ts = now; }
   haptic(skipped ? 'light' : 'medium');
   save(); markDirty();
-  notify(completionLine(ritual, startedAt, skipped, el, planMinutes(ritual)));
+  notify(completionLine(ritual, s, skipped, el, planMinutes(ritual), startedAt));
   renderAll();
   /* One ritual earns a check bloom; the whole day earns the confetti and the
      bell — eleven rituals should not fire eleven parties. */
@@ -329,29 +353,35 @@ function completeStep(ritual, id, skipped = false) {
     else completionMoment(false);
   }
 }
-function completionLine(ritual, startedAt, skipped, elapsedSec, plan) {
+function completionLine(ritual, s, skipped, elapsedSec, plan, fallbackStart) {
   if (skipped) return '↷ ' + ritual.title + ' — skipped';
-  const win = (startedAt ? D.hhmm(startedAt) + '–' : '') + D.hhmm(Date.now());
+  const split = splitsText(s, fallbackStart);
+  const span = (s.firstStartedAt && s.completedAt) ? (s.completedAt - s.firstStartedAt) / 1000 : elapsedSec;
+  const paused = span - elapsedSec > 60;                 /* a pause worth naming */
   const mins = elapsedSec / 60;
   const d = plan && mins > 20 ? ' (' + (mins - plan > 0 ? '+' : '') + Math.round(mins - plan) + 'm)' : (plan ? ' (plan ' + dur(plan) + ')' : '');
-  return '✅ ' + ritual.title + ' · ' + win + ' · ' + durLive(elapsedSec) + d;
+  return '✅ ' + ritual.title + (split ? ' · ' + split : '') + ' · ' + durLive(elapsedSec) + (paused ? ' active' : '') + d;
 }
 function reopenStep(ritual, id) {
   const run = getRunFor(ritual); const s = run.steps[id]; if (!s) return;
   s.status = 'pending'; s.skipped = false; s.completedAt = null; s.startedAt = null; s.ts = Date.now();
+  s.segments = []; s.firstStartedAt = null;              /* a reopened step starts clean */
   if (run.status === 'completed') { run.status = 'active'; run.endedAt = null; run.ts = Date.now(); }
   save(); markDirty(); renderAll();
 }
 function pauseStep(ritual, id) {
   const run = getRunFor(ritual); const s = run.steps[id];
   if (s && s.status === 'active') {
-    s.seconds = (s.seconds || 0) + (Date.now() - s.startedAt) / 1000; s.startedAt = null; s.status = 'pending'; s.ts = Date.now();
+    const now = Date.now();
+    s.seconds = (s.seconds || 0) + (now - s.startedAt) / 1000; s.startedAt = null; s.status = 'pending'; s.ts = now;
+    closeSegment(s, now);
     save(); markDirty(); renderAll();
   }
 }
 function abandonRun(ritual) {
   const run = getRunFor(ritual); const cur = activeStepId(run);
-  if (cur) { const c = run.steps[cur]; c.seconds = (c.seconds || 0) + (Date.now() - c.startedAt) / 1000; c.startedAt = null; c.status = 'pending'; c.ts = Date.now(); }
+  if (cur) { const c = run.steps[cur]; const now = Date.now();
+    c.seconds = (c.seconds || 0) + (now - c.startedAt) / 1000; c.startedAt = null; c.status = 'pending'; closeSegment(c, now); c.ts = now; }
   run.status = 'abandoned'; run.endedAt = Date.now(); run.ts = Date.now();
   save(); markDirty(); renderAll(); toast('Run abandoned — kept in history');
 }
@@ -573,8 +603,12 @@ function stepRow(ritual, run, st, i) {
   const plan = planMinutes(ritual);
   const el = stepElapsed(run, st.id);
   const over = plan && status === 'active' && el / 60 > plan;
-  const actual = (s.completedAt || s.startedAt)
-    ? [s.startedAt ? D.hhmm(s.startedAt) : null, s.completedAt ? D.hhmm(s.completedAt) : 'now'].filter(Boolean).join('–') : null;
+  const doneState = status === 'completed' || status === 'skipped';
+  const actual = doneState
+    ? [splitsText(s, s.startedAt), durLive(el)].filter(Boolean).join(' · ')
+    : ((s.completedAt || s.startedAt)
+        ? [s.startedAt ? D.hhmm(s.startedAt) : null, s.completedAt ? D.hhmm(s.completedAt) : 'now'].filter(Boolean).join('–')
+        : null);
 
   let head = '';
   if (status === 'completed') head = '<span class="badge ok">done</span>';

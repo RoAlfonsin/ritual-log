@@ -12,12 +12,16 @@ One fund of rituals, one day at a time:
 
 - Every ritual is a concrete **per-day instance**: *Mon Read*, *Fri Read*,
   *Fri Work A · iCare — merge #56, then 1.11*.
-- A block that holds several chores is **dissolved into those chores**: there is no
+- A block that holds activities is **dissolved into those activities**: there is no
   *Fri Cleaning* ritual — there is *Fri Sweep + vacuum (3/3)*, *Fri Laundry 3 — put
   in* and *Fri Cat litter — scoop*, each with its own run and its own line in the log.
   The same happens inside *Shower + grooming* (the day's shave/nails), *Exercise +
   meditation* (hanging the wash out), *Cook + dinner* (dishes) and *Rest* (arranging
-  the wash). A block whose chores are all absent — Saturday — stays as one ritual.
+  the wash).
+- What a day holds is **not** decided here: the app reads `day_plan.py`'s `day_rows()`,
+  the same function that prints the plan posted to #schedule each morning. So a block
+  the day does not have does not exist in the app either — Saturday has no cleaning
+  and no work block, and shows eight rituals, exactly like its posted plan.
 - **Week** is the whole fund — all six days plus the *any day this week* items.
 - **Today** is only the slice that belongs to the current weekday.
 - The day is **not** a ritual: nothing wraps the day. A day is a list of small
@@ -50,8 +54,13 @@ Every finished ritual posts one line, the moment it happens:
 
 ```
 ✅ Fri Read (+ coffee at the end) · 06:32–07:19 · 47m (plan 50m)
+✅ Sat Read (+ coffee at the end) · 05:30–07:12 + 07:45–08:01 · 48m active (plan 50m)
 ↷ Fri Journaling — skipped
 ```
+
+A step's time is stored as **segments**, so a pause and a resume read honestly: the
+windows it was actually worked in, and the active total — not one span that swallows
+the hours it sat paused.
 
 Failed or offline sends stay in a device-local **outbox** and retry on the next
 tick, on `online`, and on focus, so a ritual finished in a dead spot still lands.

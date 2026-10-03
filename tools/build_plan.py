@@ -2,12 +2,15 @@
 """Build docs/plan.json for Ritual Log from Hermes' own state files.
 
 Sources (read-only):
-  ~/.hermes/state/schedule/COMPOSER.md          the locked day skeleton
   ~/.hermes/state/schedule/weeks/YYYY-Www.md    the week: goals, day map, anchors
   ~/.hermes/state/life/weeks/YYYY-Www.md        the "Once this week" ritual items
+  ~/.hermes/scripts/day_plan.py                 THE authority for what a day holds
 
-Chore labels are copied VERBATIM from the #life week file: they are the same
-strings the Discord checklist uses, so the two never drift.
+The rituals are not derived from the spec document: they come from `day_plan.py`'s
+`day_rows()`, the same function that prints the day plan posted to #schedule every
+morning. So the app can never show a block the day does not have (Saturday has no
+cleaning and no work) or a chore that is not in that day's row, and the labels are
+the ones Rodri reads in the channel every morning.
 """
 import json, re, sys, datetime as dt, importlib.util
 from pathlib import Path
@@ -19,9 +22,9 @@ SCRIPTS = HOME / ".hermes/scripts"
 
 
 def load_day_plan():
-    """day_plan.py owns the mapping from a skeleton block to the #life chores that
-    sit inside it (CHORES/GROOMING/HANG_OUT/REST_EXTRA). Import it instead of
-    re-typing the labels, so the two can never drift."""
+    """day_plan.py owns the day's shape: the skeleton, the chores inside each block
+    (CHORES/GROOMING/HANG_OUT/REST_EXTRA), the day map and the menus. Import it
+    instead of re-typing any of it, so the two can never drift."""
     spec = importlib.util.spec_from_file_location("day_plan_for_plan", SCRIPTS / "day_plan.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
@@ -30,33 +33,23 @@ def load_day_plan():
 
 DAY_PLAN = load_day_plan()
 
-# Blocks that are containers of several #life chores: each chore inside becomes its
-# own mini ritual. Rodri, 2026-10-02: "Friday cleaning should not exist. I should
-# have the cleaning mini rituals for Friday."
-SPLIT = {
-    "cleaning": lambda i: list(DAY_PLAN.CHORES.get(i, [])),
-    "shower-grooming": lambda i: [DAY_PLAN.GROOMING[i]] if i in DAY_PLAN.GROOMING else [],
-    "exercise-meditation": lambda i: [DAY_PLAN.HANG_OUT[i]] if i in DAY_PLAN.HANG_OUT else [],
-    "cook-dinner": lambda i: ["Dishes"],
-    "rest": lambda i: [DAY_PLAN.REST_EXTRA[i]] if i in DAY_PLAN.REST_EXTRA else [],
-}
-
-# Explicit ids for the skeleton rows. Titles stay in the product's language
-# (English, as the Mini Rituals repo is); the label is the source of truth for
-# the id so the day ritual matches COMPOSER.md row for row.
-ROWS = {
-    "Read (+ coffee at the end)": ("read", "Read (+ coffee at the end)", None),
+# day_plan's skeleton label -> (id, English title, kind). Titles stay in the
+# product's language (English, as the Mini Rituals repo is); the structure around
+# them is day_plan's.
+BLOCK = {
+    "Read · coffee at the end": ("read", "Read (+ coffee at the end)", None),
     "Cleaning": ("cleaning", "Cleaning", None),
     "Exercise + meditation 1h": ("exercise-meditation", "Exercise + meditation", None),
-    "Breakfast (cook + eat)": ("breakfast", "Breakfast (cook + eat)", None),
+    "Breakfast": ("breakfast", "Breakfast (cook + eat)", None),
     "Shower + grooming": ("shower-grooming", "Shower + grooming", None),
     "Work A": ("work-a", "Work A", "work"),
-    "Cook + dinner (+ dishes)": ("cook-dinner", "Cook + dinner", None),
+    "Cook + dinner": ("cook-dinner", "Cook + dinner", None),
     "Work B": ("work-b", "Work B", "work"),
     "Journaling": ("journaling", "Journaling", None),
-    "Rest (games, Netflix, reading)": ("rest", "Rest (games, Netflix, reading)", None),
+    "Rest": ("rest", "Rest (games, Netflix, reading)", None),
     "Lights out": ("lights-out", "Lights out", None),
 }
+
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 DAY_CODES = ["mon", "tue", "wed", "thu", "fri", "sat"]
 DAY_LABEL = {"mon": "Mon", "tue": "Tue", "wed": "Wed", "thu": "Thu", "fri": "Fri", "sat": "Sat"}
@@ -77,33 +70,6 @@ def strip_md(s):
     s = re.sub(r"\*\*(.+?)\*\*", r"\1", s)
     s = re.sub(r"~~(.+?)~~", r"\1", s)
     return s.strip().strip("*").strip()
-
-
-def skeleton(composer: Path):
-    steps, inside = [], False
-    for line in composer.read_text(encoding="utf-8").splitlines():
-        if line.startswith("## "):
-            inside = line.startswith("## Rodri's day skeleton")
-            continue
-        if not inside or not line.startswith("|"):
-            continue
-        cells = [c.strip() for c in line.strip("|").split("|")]
-        if len(cells) != 2 or cells[0] in ("Block", "") or set(cells[1]) <= set("-: "):
-            continue
-        label, window = cells
-        sid, title, kind = ROWS.get(label, (slug(label), label, None))
-        start = end = None
-        if "–" in window:
-            a, b = [p.strip() for p in window.split("–", 1)]
-            start, end = (a or None), (b or None)
-        elif window:
-            start = window.strip() or None
-        step = {"id": sid, "title": title, "start": start, "end": end,
-                "minutes": (to_min(end) - to_min(start)) if start and end else None}
-        if kind:
-            step["kind"] = kind
-        steps.append(step)
-    return steps
 
 
 def life_items(path: Path):
@@ -225,43 +191,49 @@ def parse_week(path: Path):
             "reserve_saturday": "Reserve Saturday: on" in text}, days, goals, anchors
 
 
-def build_rituals(composer: Path, days: dict, monday: dt.date, week_items: list):
-    """One fund of mini rituals, one per day-of-week instance — Mon Read, Fri Read…
+def cap(s):
+    return (s[:1].upper() + s[1:]) if s else s
 
-    The week view is the whole fund; a day view is the slice that belongs to that
-    weekday. Work rituals take that day's day-map item as their title. Blocks that
-    are containers of several #life chores are dissolved into those chores: Friday
-    has no "Cleaning" ritual, it has vacuum / laundry in / litter scoop, each with
-    its own run and its own line in the log."""
-    skel = skeleton(composer)
+
+def build_rituals(monday: dt.date, week_items: list):
+    """The week's fund of mini rituals, straight from day_plan's rows.
+
+    A block that holds activities is dissolved into them (there is no "Fri Cleaning",
+    there is vacuum / laundry in / litter scoop); a block that is a single activity
+    stays whole; a work block is titled with that day's day-map item. Ticks are
+    ignored on purpose: this is the week's shape, not what is left of it."""
     out = []
     for i, code in enumerate(DAY_CODES):                 # Mon–Sat; Sunday is free
-        date = (monday + dt.timedelta(days=i)).isoformat()
-        day = days.get(date, {}) or {}
+        date = monday + dt.timedelta(days=i)
         order = 0
-        for s in skel:
-            parts = SPLIT[s["id"]](i) if s["id"] in SPLIT else []
-            if parts:
-                bw = f"{s['start']}–{s['end']}" if s["start"] and s["end"] else (s["start"] or None)
-                for label in parts:                      # a chore inside the block
+        for row in DAY_PLAN.day_rows(date, ticks=False):
+            bid, title, kind = BLOCK.get(row["label"], (slug(row["label"]), row["label"], None))
+            notes = [it["label"] for it in row["items"] if it["kind"] == "note"]
+            activities = [it["label"] for it in row["items"] if it["kind"] == "activity"]
+            work = next((it["label"] for it in row["items"] if it["kind"] == "work"), None)
+            if work:
+                work = strip_md(re.sub(r"[✅✔]+", "", work)).strip()
+
+            if activities:
+                for label in activities:                 # a chore inside the block
                     order += 1
-                    title = f"{DAY_LABEL[code]} {label}"
-                    out.append({"id": f"{code}-{slug(label)}", "day": code, "title": title,
-                                "order": order, "block": s["title"], "block_window": bw,
+                    t = f"{DAY_LABEL[code]} {cap(label)}"
+                    out.append({"id": f"{code}-{slug(label)}", "day": code, "title": t, "order": order,
+                                "block": title, "block_window": row["span"],
                                 "start": None, "end": None, "minutes": None,
-                                "steps": [{"id": "main", "title": title}]})
+                                "steps": [{"id": "main", "title": t}]})
                 continue                                 # the container is not a ritual itself
+
             order += 1
-            title = f"{DAY_LABEL[code]} {s['title']}"
-            if s["id"] == "work-a" and day.get("work_a"):
-                title = f"{DAY_LABEL[code]} Work A · {day['work_a']}"
-            elif s["id"] == "work-b" and day.get("work_b"):
-                title = f"{DAY_LABEL[code]} Work B · {day['work_b']}"
-            r = {"id": f"{code}-{s['id']}", "day": code, "title": title, "order": order,
-                 "start": s["start"], "end": s["end"], "minutes": s["minutes"],
-                 "steps": [{"id": "main", "title": title}]}
-            if s.get("kind"):
-                r["kind"] = s["kind"]
+            t = f"{DAY_LABEL[code]} {title}" + (f" · {work}" if work else "")
+            r = {"id": f"{code}-{bid}", "day": code, "title": t, "order": order,
+                 "start": row["start"], "end": row["end"],
+                 "minutes": (to_min(row["end"]) - to_min(row["start"])) if row["start"] and row["end"] else None,
+                 "steps": [{"id": "main", "title": t}]}
+            if notes:
+                r["note"] = notes[0]
+            if kind:
+                r["kind"] = kind
             out.append(r)
     for it in week_items:                                # no day: once this week, any day
         out.append({"id": "weekly-" + it["id"], "day": None, "title": it["title"], "order": 0,
@@ -289,7 +261,7 @@ def main():
     wk_meta, days, goals, anchors = parse_week(week_file)
     monday = dt.date.fromisoformat(wk_meta["start"])
     week_items = life_items(life_file)
-    rituals = build_rituals(STATE / "schedule/COMPOSER.md", days, monday, week_items)
+    rituals = build_rituals(monday, week_items)
     plan = {
         "updated": dt.datetime.now().astimezone().replace(microsecond=0).isoformat(),
         "source": {"week_file": str(week_file), "life_file": str(life_file) if life_file.exists() else None},
@@ -306,10 +278,9 @@ def main():
         if r["day"]:
             per_day[r["day"]] = per_day.get(r["day"], 0) + 1
     print(f"plan.json → {OUT}")
-    print(f"  {plan['week']['iso']} · {len(rituals)} mini rituals "
-          f"({per_day.get('mon', 0)} per weekday × {len(DAY_CODES)} days + "
-          f"{sum(1 for r in rituals if not r['day'])} any-day) · "
-          f"{len(goals)} goals · days with work: {sum(1 for d in days.values() if d['work_a'] or d['work_b'])}")
+    print(f"  {plan['week']['iso']} · {len(rituals)} mini rituals · "
+          + " · ".join(f"{DAY_LABEL[d]} {per_day.get(d, 0)}" for d in DAY_CODES)
+          + f" · {sum(1 for r in rituals if not r['day'])} any-day · {len(goals)} goals")
 
 
 if __name__ == "__main__":

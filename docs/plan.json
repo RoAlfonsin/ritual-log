@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-02T22:42:34-06:00",
+  "updated": "2026-10-03T09:22:39-06:00",
   "source": {
     "week_file": "/home/ro/.hermes/state/schedule/weeks/2026-W40.md",
     "life_file": "/home/ro/.hermes/state/life/weeks/2026-W40.md"
@@ -108,7 +108,8 @@
           "id": "main",
           "title": "Mon Breakfast (cook + eat)"
         }
-      ]
+      ],
+      "note": "Huevos rancheros"
     },
     {
       "id": "mon-shave-1-3",
@@ -130,7 +131,7 @@
     {
       "id": "mon-work-a",
       "day": "mon",
-      "title": "Mon Work A · iCare 1.1–1.2.1",
+      "title": "Mon Work A · iCare 1.1–1.2.1 ✅",
       "order": 8,
       "start": "10:30",
       "end": "13:30",
@@ -138,7 +139,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Mon Work A · iCare 1.1–1.2.1"
+          "title": "Mon Work A · iCare 1.1–1.2.1 ✅"
         }
       ],
       "kind": "work"
@@ -214,7 +215,7 @@
       "title": "Mon Lights out",
       "order": 13,
       "start": "21:30",
-      "end": null,
+      "end": "",
       "minutes": null,
       "steps": [
         {
@@ -334,7 +335,8 @@
           "id": "main",
           "title": "Tue Breakfast (cook + eat)"
         }
-      ]
+      ],
+      "note": "Huevos revueltos con jamón"
     },
     {
       "id": "tue-hand-nails",
@@ -356,7 +358,7 @@
     {
       "id": "tue-work-a",
       "day": "tue",
-      "title": "Tue Work A · iCare 1.3–1.6",
+      "title": "Tue Work A · iCare 1.3–1.6 ✅",
       "order": 9,
       "start": "10:30",
       "end": "13:30",
@@ -364,7 +366,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Tue Work A · iCare 1.3–1.6"
+          "title": "Tue Work A · iCare 1.3–1.6 ✅"
         }
       ],
       "kind": "work"
@@ -438,7 +440,7 @@
       "title": "Tue Lights out",
       "order": 14,
       "start": "21:30",
-      "end": null,
+      "end": "",
       "minutes": null,
       "steps": [
         {
@@ -543,7 +545,8 @@
           "id": "main",
           "title": "Wed Breakfast (cook + eat)"
         }
-      ]
+      ],
+      "note": "Quesadillas de queso con salsa"
     },
     {
       "id": "wed-shave-2-3",
@@ -565,7 +568,7 @@
     {
       "id": "wed-work-a",
       "day": "wed",
-      "title": "Wed Work A · iCare 1.7  (#55)",
+      "title": "Wed Work A · iCare 1.7 ✅ (#55)",
       "order": 8,
       "start": "10:30",
       "end": "13:30",
@@ -573,7 +576,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Wed Work A · iCare 1.7  (#55)"
+          "title": "Wed Work A · iCare 1.7 ✅ (#55)"
         }
       ],
       "kind": "work"
@@ -598,7 +601,7 @@
     {
       "id": "wed-work-b",
       "day": "wed",
-      "title": "Wed Work B · Iván 18:30",
+      "title": "Wed Work B · Iván 18:30 ✅",
       "order": 10,
       "start": "15:30",
       "end": "19:00",
@@ -606,7 +609,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Wed Work B · Iván 18:30"
+          "title": "Wed Work B · Iván 18:30 ✅"
         }
       ],
       "kind": "work"
@@ -649,7 +652,7 @@
       "title": "Wed Lights out",
       "order": 13,
       "start": "21:30",
-      "end": null,
+      "end": "",
       "minutes": null,
       "steps": [
         {
@@ -664,14 +667,15 @@
       "title": "Thu Read (+ coffee at the end)",
       "order": 1,
       "start": "06:30",
-      "end": "07:20",
-      "minutes": 50,
+      "end": "07:00",
+      "minutes": 30,
       "steps": [
         {
           "id": "main",
           "title": "Thu Read (+ coffee at the end)"
         }
-      ]
+      ],
+      "note": "half session"
     },
     {
       "id": "thu-mop-floors",
@@ -679,7 +683,7 @@
       "title": "Thu Mop floors",
       "order": 2,
       "block": "Cleaning",
-      "block_window": "07:20–08:30",
+      "block_window": "07:00–08:20",
       "start": null,
       "end": null,
       "minutes": null,
@@ -696,7 +700,7 @@
       "title": "Thu Change bedsheets",
       "order": 3,
       "block": "Cleaning",
-      "block_window": "07:20–08:30",
+      "block_window": "07:00–08:20",
       "start": null,
       "end": null,
       "minutes": null,
@@ -713,7 +717,7 @@
       "title": "Thu Trash out (2/3)",
       "order": 4,
       "block": "Cleaning",
-      "block_window": "07:20–08:30",
+      "block_window": "07:00–08:20",
       "start": null,
       "end": null,
       "minutes": null,
@@ -730,7 +734,7 @@
       "title": "Thu Laundry 2 — put in",
       "order": 5,
       "block": "Cleaning",
-      "block_window": "07:20–08:30",
+      "block_window": "07:00–08:20",
       "start": null,
       "end": null,
       "minutes": null,
@@ -747,7 +751,7 @@
       "title": "Thu Cat litter — scoop",
       "order": 6,
       "block": "Cleaning",
-      "block_window": "07:20–08:30",
+      "block_window": "07:00–08:20",
       "start": null,
       "end": null,
       "minutes": null,
@@ -786,7 +790,8 @@
           "id": "main",
           "title": "Thu Breakfast (cook + eat)"
         }
-      ]
+      ],
+      "note": "Chilaquiles"
     },
     {
       "id": "thu-exfoliate",
@@ -808,7 +813,7 @@
     {
       "id": "thu-work-a",
       "day": "thu",
-      "title": "Thu Work A · Mini Rituales — M1-01…M1-10, M1-12, M1-18",
+      "title": "Thu Work A · Mini Rituales — **M1-01…M1-10, M1-12, M1-18 ✅**",
       "order": 10,
       "start": "10:30",
       "end": "13:30",
@@ -816,7 +821,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Thu Work A · Mini Rituales — M1-01…M1-10, M1-12, M1-18"
+          "title": "Thu Work A · Mini Rituales — **M1-01…M1-10, M1-12, M1-18 ✅**"
         }
       ],
       "kind": "work"
@@ -890,7 +895,7 @@
       "title": "Thu Lights out",
       "order": 15,
       "start": "21:30",
-      "end": null,
+      "end": "",
       "minutes": null,
       "steps": [
         {
@@ -995,7 +1000,8 @@
           "id": "main",
           "title": "Fri Breakfast (cook + eat)"
         }
-      ]
+      ],
+      "note": "Quesadillas de frijol con queso"
     },
     {
       "id": "fri-shave-3-3",
@@ -1017,7 +1023,7 @@
     {
       "id": "fri-work-a",
       "day": "fri",
-      "title": "Fri Work A · iCare — merge #56, then 1.11",
+      "title": "Fri Work A · iCare — merge #56, then **1.11**",
       "order": 8,
       "start": "10:30",
       "end": "13:30",
@@ -1025,7 +1031,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Fri Work A · iCare — merge #56, then 1.11"
+          "title": "Fri Work A · iCare — merge #56, then **1.11**"
         }
       ],
       "kind": "work"
@@ -1050,7 +1056,7 @@
     {
       "id": "fri-work-b",
       "day": "fri",
-      "title": "Fri Work B · Mini Rituales — M1-11 + M1-13",
+      "title": "Fri Work B · Mini Rituales — **M1-11 + M1-13**",
       "order": 10,
       "start": "15:30",
       "end": "19:00",
@@ -1058,7 +1064,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Fri Work B · Mini Rituales — M1-11 + M1-13"
+          "title": "Fri Work B · Mini Rituales — **M1-11 + M1-13**"
         }
       ],
       "kind": "work"
@@ -1101,7 +1107,7 @@
       "title": "Fri Lights out",
       "order": 13,
       "start": "21:30",
-      "end": null,
+      "end": "",
       "minutes": null,
       "steps": [
         {
@@ -1126,25 +1132,10 @@
       ]
     },
     {
-      "id": "sat-cleaning",
-      "day": "sat",
-      "title": "Sat Cleaning",
-      "order": 2,
-      "start": "07:20",
-      "end": "08:30",
-      "minutes": 70,
-      "steps": [
-        {
-          "id": "main",
-          "title": "Sat Cleaning"
-        }
-      ]
-    },
-    {
       "id": "sat-exercise-meditation",
       "day": "sat",
       "title": "Sat Exercise + meditation",
-      "order": 3,
+      "order": 2,
       "start": "08:30",
       "end": "09:30",
       "minutes": 60,
@@ -1159,7 +1150,7 @@
       "id": "sat-breakfast",
       "day": "sat",
       "title": "Sat Breakfast (cook + eat)",
-      "order": 4,
+      "order": 3,
       "start": "09:30",
       "end": "10:10",
       "minutes": 40,
@@ -1168,13 +1159,14 @@
           "id": "main",
           "title": "Sat Breakfast (cook + eat)"
         }
-      ]
+      ],
+      "note": "Licuado de plátano, avena y leche"
     },
     {
       "id": "sat-shower-grooming",
       "day": "sat",
       "title": "Sat Shower + grooming",
-      "order": 5,
+      "order": 4,
       "start": "10:10",
       "end": "10:30",
       "minutes": 20,
@@ -1186,26 +1178,10 @@
       ]
     },
     {
-      "id": "sat-work-a",
-      "day": "sat",
-      "title": "Sat Work A",
-      "order": 6,
-      "start": "10:30",
-      "end": "13:30",
-      "minutes": 180,
-      "steps": [
-        {
-          "id": "main",
-          "title": "Sat Work A"
-        }
-      ],
-      "kind": "work"
-    },
-    {
       "id": "sat-dishes",
       "day": "sat",
       "title": "Sat Dishes",
-      "order": 7,
+      "order": 5,
       "block": "Cook + dinner",
       "block_window": "13:30–15:30",
       "start": null,
@@ -1219,26 +1195,10 @@
       ]
     },
     {
-      "id": "sat-work-b",
-      "day": "sat",
-      "title": "Sat Work B",
-      "order": 8,
-      "start": "15:30",
-      "end": "19:00",
-      "minutes": 210,
-      "steps": [
-        {
-          "id": "main",
-          "title": "Sat Work B"
-        }
-      ],
-      "kind": "work"
-    },
-    {
       "id": "sat-journaling",
       "day": "sat",
       "title": "Sat Journaling",
-      "order": 9,
+      "order": 6,
       "start": "19:00",
       "end": "19:30",
       "minutes": 30,
@@ -1253,7 +1213,7 @@
       "id": "sat-rest",
       "day": "sat",
       "title": "Sat Rest (games, Netflix, reading)",
-      "order": 10,
+      "order": 7,
       "start": "19:30",
       "end": "21:30",
       "minutes": 120,
@@ -1268,9 +1228,9 @@
       "id": "sat-lights-out",
       "day": "sat",
       "title": "Sat Lights out",
-      "order": 11,
+      "order": 8,
       "start": "21:30",
-      "end": null,
+      "end": "",
       "minutes": null,
       "steps": [
         {
