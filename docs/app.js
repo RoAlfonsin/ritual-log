@@ -271,7 +271,10 @@ function ritualState(ritual) {
   if (!run || !steps.length) return 'pending';
   const st = steps.map(s => stepStatus(run, s.id));
   if (st.every(x => x === 'completed')) return 'completed';
-  if (st.every(x => x === 'completed' || x === 'skipped')) return 'skipped';
+  /* A run is skipped only when *every* step was skipped. A meal where the cooking
+     happened and the rest was skipped is done — calling it "skipped" threw the work
+     away in the log. */
+  if (st.every(x => x === 'completed' || x === 'skipped')) return st.some(x => x === 'completed') ? 'completed' : 'skipped';
   if (st.some(x => x === 'active')) return 'active';
   return 'pending';
 }
@@ -314,12 +317,22 @@ function splitsText(s, fallbackStart) {
   if (fallbackStart) return D.hhmm(fallbackStart) + '–' + D.hhmm(Date.now());
   return null;
 }
+/* Moving on to the next step means the one before it is done — nobody taps "start
+   cooking" and then "start eating" intending to leave cooking paused. Pausing stays
+   available on the button for the case where he really does step away. */
+function autoFinish(run, id, now) {
+  const c = run.steps[id];
+  if (!c || c.status !== 'active') return;
+  c.seconds = (c.seconds || 0) + (now - c.startedAt) / 1000;
+  c.status = 'completed'; c.completedAt = now; c.startedAt = null;
+  closeSegment(c, now); c.ts = now;
+}
 function startStep(ritual, id) {
   const run = getRunFor(ritual);
   const now = Date.now();
   const cur = activeStepId(run);
   if (cur === id) return;
-  if (cur) { const c = run.steps[cur]; c.seconds = (c.seconds || 0) + (now - c.startedAt) / 1000; c.status = 'pending'; c.startedAt = null; closeSegment(c, now); c.ts = now; }
+  if (cur) autoFinish(run, cur, now);
   const s = run.steps[id] || (run.steps[id] = { seconds: 0 });
   s.status = 'active'; s.startedAt = now; s.completedAt = null; s.skipped = false; s.ts = now;
   openSegment(s, now);
@@ -339,12 +352,14 @@ function completeStep(ritual, id, skipped = false) {
   closeSegment(s, now);
   if (!s.firstStartedAt) s.firstStartedAt = startedAt || now;
   if (!run.startedAt) run.startedAt = now;
-  const el = stepElapsed(run, id);
   const allDone = (ritual.steps || []).every(x => ['completed', 'skipped'].indexOf(stepStatus(run, x.id)) >= 0);
   if (allDone) { run.status = 'completed'; run.endedAt = now; run.ts = now; }
   haptic(skipped ? 'light' : 'medium');
   save(); markDirty();
-  notify(completionLine(ritual, s, skipped, el, planMinutes(ritual), startedAt));
+  /* One line per *run*, at the moment the run closes — a meal is three steps and
+     must not become three messages. A single-step ritual closes on its own step, so
+     its line is unchanged. */
+  if (allDone) notify(runLine(ritual, run));
   renderAll();
   /* One ritual earns a check bloom; the whole day earns the confetti and the
      bell — eleven rituals should not fire eleven parties. */
@@ -353,14 +368,31 @@ function completeStep(ritual, id, skipped = false) {
     else completionMoment(false);
   }
 }
-function completionLine(ritual, s, skipped, elapsedSec, plan, fallbackStart) {
-  if (skipped) return '↷ ' + ritual.title + ' — skipped';
-  const split = splitsText(s, fallbackStart);
-  const span = (s.firstStartedAt && s.completedAt) ? (s.completedAt - s.firstStartedAt) / 1000 : elapsedSec;
-  const paused = span - elapsedSec > 60;                 /* a pause worth naming */
-  const mins = elapsedSec / 60;
-  const d = plan && mins > 20 ? ' (' + (mins - plan > 0 ? '+' : '') + Math.round(mins - plan) + 'm)' : (plan ? ' (plan ' + dur(plan) + ')' : '');
-  return '✅ ' + ritual.title + (split ? ' · ' + split : '') + ' · ' + durLive(elapsedSec) + (paused ? ' active' : '') + d;
+/* One line for the whole run. A single step keeps the old shape (its segments when it
+   was paused, then its active total); a multi-step run names the window, the total,
+   and what each step took — the flow of a meal, in one message. */
+function runLine(ritual, run) {
+  const steps = (ritual.steps || []).map(st => ({ title: st.title, s: run.steps[st.id] || {} }));
+  if (!steps.length) return '✅ ' + ritual.title;
+  if (steps.every(x => x.s.status === 'skipped')) return '↷ ' + ritual.title + ' — skipped';
+  const active = steps.reduce((a, x) => a + (x.s.seconds || 0), 0);
+  const starts = steps.map(x => x.s.firstStartedAt).filter(v => v != null);
+  const from = starts.length ? Math.min.apply(null, starts) : (run.startedAt || Date.now());
+  const to = run.endedAt || Date.now();
+  const one = steps.length === 1;
+  const split = one ? splitsText(steps[0].s, from) : D.hhmm(from) + '–' + D.hhmm(to);
+  const paused = one && (to - from) / 1000 - active > 60;
+  const plan = planMinutes(ritual);
+  const mins = active / 60;
+  const anySkipped = steps.some(x => x.s.status === 'skipped');
+  /* A plan delta against a run he cut short would read as a failure; name the plan. */
+  const d = plan && mins > 20 && !anySkipped
+    ? ' (' + (mins - plan > 0 ? '+' : '') + Math.round(mins - plan) + 'm)'
+    : (plan ? ' (plan ' + dur(plan) + ')' : '');
+  const brk = one ? '' : ' · ' + steps.map(x => x.s.status === 'skipped'
+    ? x.title + ' skipped' : x.title + ' ' + durLive(x.s.seconds || 0)).join(' · ');
+  return '✅ ' + ritual.title + (split ? ' · ' + split : '') + ' · ' + durLive(active) +
+    (paused ? ' active' : '') + d + brk;
 }
 function reopenStep(ritual, id) {
   const run = getRunFor(ritual); const s = run.steps[id]; if (!s) return;
@@ -629,7 +661,9 @@ function renderRitual() {
 function stepRow(ritual, run, st, i) {
   const s = run.steps[st.id] || {};
   const status = s.status || 'pending';
-  const plan = planMinutes(ritual);
+  /* The plan belongs to the run, not to each step of a meal: three steps must not
+     each claim the block's two hours. */
+  const plan = (ritual.steps || []).length > 1 ? null : planMinutes(ritual);
   const el = stepElapsed(run, st.id);
   const over = plan && status === 'active' && el / 60 > plan;
   const doneState = status === 'completed' || status === 'skipped';
@@ -798,9 +832,13 @@ function dayLog() {
   list.forEach(r => {
     const state = ritualState(r);
     const run = getRunFor(r, false);
-    const key = run && Object.keys(run.steps)[0];
-    const st = key ? run.steps[key] : null;
-    if (state === 'completed') lines.push('- ✅ ' + r.title + (st && st.seconds ? ' — ' + durLive(st.seconds) : ''));
+    const steps = (r.steps || []).map(x => ({ title: x.title, s: (run && run.steps[x.id]) || {} }));
+    const secs = steps.reduce((a, x) => a + (x.s.seconds || 0), 0);
+    const brk = steps.length > 1
+      ? ' (' + steps.map(x => x.s.status === 'skipped' ? x.title.toLowerCase() + ' skipped'
+        : x.title.toLowerCase() + ' ' + durLive(x.s.seconds || 0)).join(' · ') + ')'
+      : '';
+    if (state === 'completed') lines.push('- ✅ ' + r.title + (secs ? ' — ' + durLive(secs) : '') + brk);
     else if (state === 'skipped') lines.push('- ↷ ' + r.title + ' — skipped');
     else if (state === 'active') lines.push('- ▶ ' + r.title + ' — running');
   });
@@ -859,6 +897,15 @@ document.addEventListener('click', e => {
     return;
   }
   if (t.id === 'install') return install();
+  if (t.id === 'rv-done') {
+    if (!ritual) return;
+    const run = getRunFor(ritual);
+    (ritual.steps || []).filter(x => ['completed', 'skipped'].indexOf(stepStatus(run, x.id)) < 0).forEach(x => {
+      const s = run.steps[x.id] || {};
+      completeStep(ritual, x.id, !(s.firstStartedAt || s.seconds));   /* never started: it got skipped */
+    });
+    return;
+  }
   if (t.id === 'rv-abandon') return ritual ? abandonRun(ritual) : null;
   if (t.id === 'x-add') {
     const tx = document.getElementById('x-text').value.trim();

@@ -40,10 +40,10 @@ BLOCK = {
     "Read · coffee at the end": ("read", "Read (+ coffee at the end)", None),
     "Cleaning": ("cleaning", "Cleaning", None),
     "Exercise + meditation 1h": ("exercise-meditation", "Exercise + meditation", None),
-    "Breakfast": ("breakfast", "Breakfast (cook + eat)", None),
+    "Breakfast": ("breakfast", "Breakfast", None),
     "Shower + grooming": ("shower-grooming", "Shower + grooming", None),
     "Work A": ("work-a", "Work A", "work"),
-    "Cook + dinner": ("cook-dinner", "Cook + dinner", None),
+    "Cook + dinner": ("cook-dinner", "Dinner", None),
     "Work B": ("work-b", "Work B", "work"),
     "Journaling": ("journaling", "Journaling", None),
     "Rest": ("rest", "Rest (games, Netflix, reading)", None),
@@ -191,6 +191,15 @@ def parse_week(path: Path):
             "reserve_saturday": "Reserve Saturday: on" in text}, days, goals, anchors
 
 
+# breakfast and dinner are one ritual each, with the same three steps: cook it, eat
+# it, clean up after it. The day plan lists dishes inside the dinner block, so the
+# third step is where they belong — no separate "Dishes" ritual that nobody can place.
+MEALS = {
+    "Breakfast": ["Cooking", "Eating", "Cleaning"],
+    "Cook + dinner": ["Cooking", "Eating", "Cleaning"],
+}
+
+
 def cap(s):
     return (s[:1].upper() + s[1:]) if s else s
 
@@ -201,7 +210,12 @@ def build_rituals(monday: dt.date, week_items: list):
     A block that holds activities is dissolved into them (there is no "Fri Cleaning",
     there is vacuum / laundry in / litter scoop); a block that is a single activity
     stays whole; a work block is titled with that day's day-map item. Ticks are
-    ignored on purpose: this is the week's shape, not what is left of it."""
+    ignored on purpose: this is the week's shape, not what is left of it.
+
+    Breakfast and dinner are the exception: they are **meals**, and a meal is one
+    ritual with three steps — cooking, eating, cleaning up. The dishes the day plan
+    lists inside the dinner block are the third step, not a sibling ritual.
+    """
     out = []
     for i, code in enumerate(DAY_CODES):                 # Mon–Sat; Sunday is free
         date = monday + dt.timedelta(days=i)
@@ -213,6 +227,18 @@ def build_rituals(monday: dt.date, week_items: list):
             work = next((it["label"] for it in row["items"] if it["kind"] == "work"), None)
             if work:
                 work = strip_md(re.sub(r"[✅✔]+", "", work)).strip()
+
+            if row["label"] in MEALS:
+                order += 1
+                t = f"{DAY_LABEL[code]} {title}"
+                r = {"id": f"{code}-{bid}", "day": code, "title": t, "order": order,
+                     "start": row["start"], "end": row["end"],
+                     "minutes": (to_min(row["end"]) - to_min(row["start"])) if row["start"] and row["end"] else None,
+                     "steps": [{"id": slug(s), "title": s} for s in MEALS[row["label"]]]}
+                if notes:
+                    r["note"] = notes[0]
+                out.append(r)
+                continue                                 # the meal is the ritual, dishes included
 
             if activities:
                 for label in activities:                 # a chore inside the block

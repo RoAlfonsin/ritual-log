@@ -22,6 +22,11 @@ One fund of rituals, one day at a time:
   the same function that prints the plan posted to #schedule each morning. So a block
   the day does not have does not exist in the app either — Saturday has no cleaning
   and no work block, and shows eight rituals, exactly like its posted plan.
+- **Breakfast and dinner are meals**: one ritual each with the same three steps —
+  *Cooking · Eating · Cleaning*. The dishes the day plan lists inside the dinner block
+  are that third step, not a separate *Dishes* ritual. Starting a step finishes the one
+  before it (you do not tap "start cooking" and then "start eating" meaning to leave
+  cooking paused); *Pause timer* is still there for when you really do step away.
 - **Week** is the whole fund — all six days plus the *any day this week* items.
 - **Today** is only the slice that belongs to the current weekday.
 - The day is **not** a ritual: nothing wraps the day. A day is a list of small
@@ -61,6 +66,19 @@ Every finished ritual posts one line, the moment it happens:
 A step's time is stored as **segments**, so a pause and a resume read honestly: the
 windows it was actually worked in, and the active total — not one span that swallows
 the hours it sat paused.
+
+A **meal** is one run of three steps, and it still sends **one** line, at the moment
+the run closes — with the flow inside it:
+
+```
+✅ Sat Breakfast · 09:38–10:05 · 27m (plan 40m) · Cooking 12m · Eating 9m · Cleaning 6m
+✅ Sat Dinner · 13:35–15:10 · 1h35 (plan 2h00) · Cooking 40m · Eating 30m · Cleaning 25m
+↷ Fri Journaling — skipped
+```
+
+A step never started is not claimed as done: closing a run early names it
+`· Eating skipped`. The plan delta (`(-95m)`) is dropped when a run was cut short — it
+would read as a failure rather than a choice.
 
 Failed or offline sends stay in a device-local **outbox** and retry on the next
 tick, on `online`, and on focus, so a ritual finished in a dead spot still lands.
