@@ -1,59 +1,59 @@
 {
-  "updated": "2026-10-02T21:18:38-06:00",
+  "updated": "2026-10-02T21:38:48-06:00",
   "source": {
     "week_file": "/home/ro/.hermes/state/schedule/weeks/2026-W40.md",
     "life_file": "/home/ro/.hermes/state/life/weeks/2026-W40.md"
   },
   "week": {
     "iso": "2026-W40",
-    "label": "Semana 40",
+    "label": "Week 40",
     "start": "2026-09-28",
     "end": "2026-10-04",
     "reserve_saturday": false
   },
   "rituals": {
     "day": {
-      "title": "Día",
+      "title": "Day",
       "order_mode": "sequential",
       "steps": [
         {
           "id": "read",
-          "title": "Leer (+ café al final)",
+          "title": "Read (+ coffee at the end)",
           "start": "06:30",
           "end": "07:20",
           "minutes": 50
         },
         {
           "id": "cleaning",
-          "title": "Limpieza",
+          "title": "Cleaning",
           "start": "07:20",
           "end": "08:30",
           "minutes": 70
         },
         {
           "id": "exercise-meditation",
-          "title": "Ejercicio + meditación",
+          "title": "Exercise + meditation",
           "start": "08:30",
           "end": "09:30",
           "minutes": 60
         },
         {
           "id": "breakfast",
-          "title": "Desayuno (cocinar + comer)",
+          "title": "Breakfast (cook + eat)",
           "start": "09:30",
           "end": "10:10",
           "minutes": 40
         },
         {
           "id": "shower-grooming",
-          "title": "Ducha + aseo",
+          "title": "Shower + grooming",
           "start": "10:10",
           "end": "10:30",
           "minutes": 20
         },
         {
           "id": "work-a",
-          "title": "Trabajo A",
+          "title": "Work A",
           "start": "10:30",
           "end": "13:30",
           "minutes": 180,
@@ -61,14 +61,14 @@
         },
         {
           "id": "cook-dinner",
-          "title": "Cocinar + cena (+ trastes)",
+          "title": "Cook + dinner (+ dishes)",
           "start": "13:30",
           "end": "15:30",
           "minutes": 120
         },
         {
           "id": "work-b",
-          "title": "Trabajo B",
+          "title": "Work B",
           "start": "15:30",
           "end": "19:00",
           "minutes": 210,
@@ -83,14 +83,14 @@
         },
         {
           "id": "rest",
-          "title": "Descanso (juegos, Netflix, lectura)",
+          "title": "Rest (games, Netflix, reading)",
           "start": "19:30",
           "end": "21:30",
           "minutes": 120
         },
         {
           "id": "lights-out",
-          "title": "Apagar luces",
+          "title": "Lights out",
           "start": "21:30",
           "end": null,
           "minutes": null
@@ -98,7 +98,7 @@
       ]
     },
     "week": {
-      "title": "Semana",
+      "title": "Week",
       "order_mode": "free",
       "steps": [
         {

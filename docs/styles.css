@@ -123,7 +123,8 @@ li.step .bar > i { display: block; height: 100%; background: var(--accent); widt
   border: 1px solid var(--border); overflow: hidden; touch-action: none; user-select: none; }
 .slide .fill { position: absolute; inset: 0; width: 0; background: var(--accent-tint); }
 .slide .hint { position: absolute; inset: 0; display: grid; place-items: center; font-size: 14.5px; font-weight: 600;
-  color: var(--muted); pointer-events: none; }
+  color: var(--muted); pointer-events: none; padding-left: 52px; }
+.slide.tapmode .hint { padding-left: 0; }
 .slide .knob { position: absolute; top: 5px; left: 5px; width: 42px; height: 42px; border-radius: var(--r-sm);
   background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 19px;
   box-shadow: var(--shadow); cursor: grab; touch-action: none; }
@@ -156,6 +157,9 @@ input[type=text], input[type=number] { background: var(--surface-2); color: var(
 .toggle.on .sw { background: var(--accent); }
 .toggle.on .sw::after { left: 21px; }
 .toggle .lbl { flex: 1; }
+.toggle .lbl small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 400; margin-top: 2px; }
+#sync-chip { margin-left: auto; }
+#clock { margin-left: 0; }
 
 /* completion moment */
 #moment { position: fixed; inset: 0; display: none; place-items: center; z-index: 80; pointer-events: none; background: color-mix(in srgb, var(--bg) 72%, transparent); }

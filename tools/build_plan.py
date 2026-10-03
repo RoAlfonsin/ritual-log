@@ -16,20 +16,21 @@ HOME = Path.home()
 STATE = HOME / ".hermes/state"
 OUT = Path(__file__).resolve().parents[1] / "docs/plan.json"
 
-# Explicit ids/translations for the skeleton rows (COMPOSER.md is English, the
-# product copy is Spanish). Fallback: a slug of the source label.
+# Explicit ids for the skeleton rows. Titles stay in the product's language
+# (English, as the Mini Rituals repo is); the label is the source of truth for
+# the id so the day ritual matches COMPOSER.md row for row.
 ROWS = {
-    "Read (+ coffee at the end)": ("read", "Leer (+ café al final)", None),
-    "Cleaning": ("cleaning", "Limpieza", None),
-    "Exercise + meditation 1h": ("exercise-meditation", "Ejercicio + meditación", None),
-    "Breakfast (cook + eat)": ("breakfast", "Desayuno (cocinar + comer)", None),
-    "Shower + grooming": ("shower-grooming", "Ducha + aseo", None),
-    "Work A": ("work-a", "Trabajo A", "work"),
-    "Cook + dinner (+ dishes)": ("cook-dinner", "Cocinar + cena (+ trastes)", None),
-    "Work B": ("work-b", "Trabajo B", "work"),
+    "Read (+ coffee at the end)": ("read", "Read (+ coffee at the end)", None),
+    "Cleaning": ("cleaning", "Cleaning", None),
+    "Exercise + meditation 1h": ("exercise-meditation", "Exercise + meditation", None),
+    "Breakfast (cook + eat)": ("breakfast", "Breakfast (cook + eat)", None),
+    "Shower + grooming": ("shower-grooming", "Shower + grooming", None),
+    "Work A": ("work-a", "Work A", "work"),
+    "Cook + dinner (+ dishes)": ("cook-dinner", "Cook + dinner (+ dishes)", None),
+    "Work B": ("work-b", "Work B", "work"),
     "Journaling": ("journaling", "Journaling", None),
-    "Rest (games, Netflix, reading)": ("rest", "Descanso (juegos, Netflix, lectura)", None),
-    "Lights out": ("lights-out", "Apagar luces", None),
+    "Rest (games, Netflix, reading)": ("rest", "Rest (games, Netflix, reading)", None),
+    "Lights out": ("lights-out", "Lights out", None),
 }
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 MONTHS = {m: i + 1 for i, m in enumerate(
@@ -192,7 +193,7 @@ def parse_week(path: Path):
                 continue
         days[d.isoformat()]["anchors"].append(frag)
 
-    return {"iso": f"{iso[0]}-W{iso[1]:02d}", "label": f"Semana {wn}",
+    return {"iso": f"{iso[0]}-W{iso[1]:02d}", "label": f"Week {wn}",
             "start": monday.isoformat(), "end": month_end.isoformat(),
             "reserve_saturday": "Reserve Saturday: on" in text}, days, goals, anchors
 
@@ -219,8 +220,8 @@ def main():
         "source": {"week_file": str(week_file), "life_file": str(life_file) if life_file.exists() else None},
         "week": wk_meta,
         "rituals": {
-            "day": {"title": "Día", "order_mode": "sequential", "steps": skeleton(STATE / "schedule/COMPOSER.md")},
-            "week": {"title": "Semana", "order_mode": "free", "steps": life_items(life_file)},
+            "day": {"title": "Day", "order_mode": "sequential", "steps": skeleton(STATE / "schedule/COMPOSER.md")},
+            "week": {"title": "Week", "order_mode": "free", "steps": life_items(life_file)},
         },
         "days": days,
         "goals": goals,
