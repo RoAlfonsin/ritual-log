@@ -1,59 +1,48 @@
 'use strict';
-/* Ritual Log — a Mini Rituals run for Rodri's day and week. Product copy is
-   English-first, as the Mini Rituals repo is.
+/* Ritual Log — one fund of mini rituals for the week, built on the Mini Rituals
+   model. Vocabulary from docs/CONTEXT.md; product copy is English.
 
-   Vocabulary is docs/CONTEXT.md's: ritual, revision, step, run, active run,
-   completion, skip, slide to complete, completion moment, run summary, run
-   history, sync state.
+   The model
+   ---------
+   Every ritual is a concrete per-day instance: "Mon Read", "Fri Read",
+   "Fri Work A · iCare — merge #56". There is one fund of them — the week — and
+   a day is only the slice that belongs to that weekday. No ritual wraps a whole
+   day any more: the day is a list of small rituals. Each carries a single step
+   today; the step list is data, so a ritual can grow into a sequence later.
 
-   Data model: the device keeps its own store (instant, offline) and the same
-   document is shared across devices through one private gist — no server, no
-   database. Every mutation stamps `ts` on the record it touches and merging
-   takes the newer record per step and per run, so the phone and the laptop can
-   both write without either losing work. Reading never blocks on the network:
-   the local store renders immediately and the shared document is fetched on
-   boot, on focus, and on demand. */
+   Finishing a ritual posts one line to #schedule through the webhook, so the
+   channel hears about it the moment it happens (queued offline, retried until it
+   lands). The log itself is shared across devices through one private gist — no
+   server, no database.
 
-/* The shared document — a private gist. The id alone cannot read it; a GitHub
-   token with `gist` scope can. */
+   Data
+   ----
+   localStorage is the device store; the shared document carries only runs and
+   extras, and per-run and per-step `ts` decides merges (newer wins, nothing is
+   lost). The outbox is device-local by design: it is delivery state, not history. */
+
 const GIST_ID = 'f5e0ab302e947c02675069113296131f';
 const GIST_FILE = 'ritual-log.json';
-const LS_DB = 'ritual-log.v2';
-const LS_PLAN = 'ritual-log.plan.v2';
+const LS_DB = 'ritual-log.v3';
+const LS_PLAN = 'ritual-log.plan.v3';
 const LS_TOKEN = 'ritual-log.token';
 
-const FALLBACK_PLAN = {
-  updated: null, week: { iso: '', label: '', start: null, end: null, reserve_saturday: false },
-  rituals: {
-    day: { title: 'Day', order_mode: 'sequential', steps: [
-      { id: 'read', title: 'Read (+ coffee at the end)', start: '06:30', end: '07:20', minutes: 50 },
-      { id: 'cleaning', title: 'Cleaning', start: '07:20', end: '08:30', minutes: 70 },
-      { id: 'exercise-meditation', title: 'Exercise + meditation', start: '08:30', end: '09:30', minutes: 60 },
-      { id: 'breakfast', title: 'Breakfast (cook + eat)', start: '09:30', end: '10:10', minutes: 40 },
-      { id: 'shower-grooming', title: 'Shower + grooming', start: '10:10', end: '10:30', minutes: 20 },
-      { id: 'work-a', title: 'Work A', start: '10:30', end: '13:30', minutes: 180, kind: 'work' },
-      { id: 'cook-dinner', title: 'Cook + dinner (+ dishes)', start: '13:30', end: '15:30', minutes: 120 },
-      { id: 'work-b', title: 'Work B', start: '15:30', end: '19:00', minutes: 210, kind: 'work' },
-      { id: 'journaling', title: 'Journaling', start: '19:00', end: '19:30', minutes: 30 },
-      { id: 'rest', title: 'Rest (games, Netflix, reading)', start: '19:30', end: '21:30', minutes: 120 },
-      { id: 'lights-out', title: 'Lights out', start: '21:30', end: null, minutes: null }
-    ] },
-    week: { title: 'Week', order_mode: 'free', steps: [] }
-  },
-  days: {}, goals: [], anchors: []
-};
+const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const DAY_LABEL = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' };
 
-const S = { plan: FALLBACK_PLAN, db: null, tab: 'today', ritual: 'day', tick: null,
+const FALLBACK_PLAN = { updated: null, week: { iso: '', label: '', start: null, end: null }, rituals: [], days: {}, goals: [], anchors: [] };
+
+const S = { plan: FALLBACK_PLAN, db: null, byId: {}, tab: 'today', ritualId: null, tick: null,
   planError: null, sync: 'local', syncMsg: '', dirty: false, pushing: false };
 
 /* ---------- store ---------- */
 function loadDB() {
   try { const raw = localStorage.getItem(LS_DB); if (raw) return JSON.parse(raw); } catch (e) {}
-  return { v: 2, runs: {}, settings: { slide: true, sound: true } };
+  return { v: 3, runs: {}, extras: {}, outbox: [], settings: { slide: true, sound: true, notify: true } };
 }
 function save() { S.db.updated = Date.now(); try { localStorage.setItem(LS_DB, JSON.stringify(S.db)); } catch (e) {} }
 function loadPlanCache() {
-  try { const raw = localStorage.getItem(LS_PLAN); if (raw) { const p = JSON.parse(raw); if (p && p.rituals) return p; } } catch (e) {}
+  try { const raw = localStorage.getItem(LS_PLAN); if (raw) { const p = JSON.parse(raw); if (p && p.rituals && p.rituals.length) return p; } } catch (e) {}
   return null;
 }
 function token() { try { return localStorage.getItem(LS_TOKEN) || ''; } catch (e) { return ''; } }
@@ -63,83 +52,76 @@ async function refreshPlan() {
     const res = await fetch('plan.json?t=' + Date.now(), { cache: 'no-store' });
     if (!res.ok) { S.planError = 'HTTP ' + res.status; renderAll(); return; }
     const p = await res.json();
-    if (!p || !p.rituals || !p.rituals.day) { S.planError = 'plan.json has no rituals'; renderAll(); return; }
-    S.plan = p; S.planError = null;
+    if (!p || !p.rituals || !p.rituals.length) { S.planError = 'plan.json has no rituals'; renderAll(); return; }
+    adoptPlan(p);
     try { localStorage.setItem(LS_PLAN, JSON.stringify(p)); } catch (e) { S.planError = 'could not cache the plan'; }
     renderAll();
   } catch (e) { S.planError = (e && e.message) ? e.message : String(e); renderAll(); }
 }
+function adoptPlan(p) {
+  S.plan = p; S.planError = null;
+  S.byId = {};
+  (p.rituals || []).forEach(r => { S.byId[r.id] = r; });
+}
 
 /* ---------- sync: one private gist is the whole backend ---------- */
-function syncState(state, msg) { S.sync = state; S.syncMsg = msg || ''; renderSync(); }
+function setSync(state, msg) { S.sync = state; S.syncMsg = msg || ''; renderChips(); }
 function markDirty() { S.dirty = true; schedulePush(); }
-
 let pushTimer = null;
 function schedulePush(delay) {
-  if (!token()) { syncState('local', 'Not connected — this device only'); return; }
-  syncState('pending', 'Saving…');
+  if (!token()) { setSync('local', 'Not connected — this device only'); return; }
+  setSync('pending', 'Saving…');
   clearTimeout(pushTimer);
   pushTimer = setTimeout(push, delay == null ? 2500 : delay);
 }
+function sharedDoc(db) { return { v: 3, updatedAt: db.updated || 0, runs: db.runs || {}, extras: db.extras || {} }; }
 
 async function gh(path, opts = {}) {
   const r = await fetch('https://api.github.com' + path, Object.assign({}, opts, {
     cache: 'no-store',
-    headers: Object.assign({
-      Authorization: 'token ' + token(),
-      Accept: 'application/vnd.github+json',
-      'Content-Type': 'application/json'
-    }, opts.headers || {})
+    headers: Object.assign({ Authorization: 'token ' + token(), Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' }, opts.headers || {})
   }));
   if (!r.ok) throw Object.assign(new Error('HTTP ' + r.status), { status: r.status });
   return r.json();
 }
-
+const EMPTY_DOC = () => ({ v: 3, runs: {}, extras: {} });
+function parseDoc(file) { try { return file && file.content ? JSON.parse(file.content) : EMPTY_DOC(); } catch (e) { return EMPTY_DOC(); } }
 async function pull() {
-  if (!token()) { syncState('local', 'Not connected — this device only'); return; }
-  syncState('syncing', 'Checking the shared log…');
+  if (!token()) { setSync('local', 'Not connected — this device only'); return; }
+  setSync('syncing', 'Checking the shared log…');
   try {
     const g = await gh('/gists/' + GIST_ID);
-    const file = g.files && g.files[GIST_FILE];
-    const remote = file && file.content ? JSON.parse(file.content) : { v: 2, runs: {} };
-    const merged = mergeDocs(S.db, remote);
-    S.db.runs = merged.runs;
-    save();
-    renderAll();
-    syncState('synced', 'Updated ' + D.hhmm(Date.now()));
+    const merged = mergeDocs(sharedDoc(S.db), parseDoc(g.files && g.files[GIST_FILE]));
+    S.db.runs = merged.runs; S.db.extras = merged.extras || {};
+    save(); renderAll();
+    setSync('synced', 'Updated ' + D.hhmm(Date.now()));
     if (S.dirty) push();
   } catch (e) {
-    syncState('failed', rejected(e) ? 'Token rejected — check it has gist access' : 'Could not reach the shared log (' + e.message + ')');
+    setSync('failed', rejected(e) ? 'Token rejected — check it has gist access' : 'Could not reach the shared log (' + e.message + ')');
   }
 }
-
 async function push() {
   if (!token() || S.pushing) return;
   S.pushing = true;
-  syncState('syncing', 'Saving…');
+  setSync('syncing', 'Saving…');
   try {
     const g = await gh('/gists/' + GIST_ID);
-    const cur = g.files && g.files[GIST_FILE] && g.files[GIST_FILE].content ? JSON.parse(g.files[GIST_FILE].content) : { v: 2, runs: {} };
-    const merged = mergeDocs(S.db, cur);
-    S.db.runs = merged.runs;
-    merged.updatedAt = Date.now();
-    save();
+    const merged = mergeDocs(sharedDoc(S.db), parseDoc(g.files && g.files[GIST_FILE]));
+    S.db.runs = merged.runs; S.db.extras = merged.extras || {};
+    merged.updatedAt = Date.now(); save();
     await gh('/gists/' + GIST_ID, { method: 'PATCH', body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(merged) } } }) });
-    S.dirty = false;
-    renderAll();
-    syncState('synced', 'Saved ' + D.hhmm(Date.now()));
+    S.dirty = false; renderAll();
+    setSync('synced', 'Saved ' + D.hhmm(Date.now()));
   } catch (e) {
-    syncState('failed', rejected(e) ? 'Token rejected — check it has gist access' : 'Not saved (' + e.message + ')');
+    setSync('failed', rejected(e) ? 'Token rejected — check it has gist access' : 'Not saved (' + e.message + ')');
   }
   S.pushing = false;
 }
 function rejected(e) { return e && (e.status === 401 || e.status === 403); }
 
-/* Merge two documents. Per run and per step the newer `ts` wins, so a step
-   completed on the phone is never undone by a stale screen on the laptop, and
-   the union of both devices' work survives. */
+/* Newer `ts` wins per run and per step, so both devices can write. */
 function mergeDocs(a, b) {
-  const out = { v: 2, updatedAt: Math.max(a.updatedAt || 0, b.updatedAt || 0), runs: {} };
+  const out = { v: 3, updatedAt: Math.max(a.updatedAt || 0, b.updatedAt || 0), runs: {}, extras: {} };
   const keys = new Set(Object.keys(a.runs || {}).concat(Object.keys(b.runs || {})));
   keys.forEach(k => {
     const x = (a.runs || {})[k], y = (b.runs || {})[k];
@@ -147,21 +129,22 @@ function mergeDocs(a, b) {
     if (!y) { out.runs[k] = x; return; }
     const run = ts(x) >= ts(y) ? Object.assign({}, x) : Object.assign({}, y);
     run.steps = {};
-    const ids = new Set(Object.keys(x.steps || {}).concat(Object.keys(y.steps || {})));
-    ids.forEach(id => {
+    new Set(Object.keys(x.steps || {}).concat(Object.keys(y.steps || {}))).forEach(id => {
       const sx = (x.steps || {})[id], sy = (y.steps || {})[id];
       if (!sx) run.steps[id] = sy;
       else if (!sy) run.steps[id] = sx;
       else run.steps[id] = ts(sx) >= ts(sy) ? sx : sy;
     });
-    const extras = {};
-    (x.extras || []).concat(y.extras || []).forEach(ex => { if (ex && ex.at != null) extras[ex.at + '|' + (ex.text || '')] = ex; });
-    run.extras = Object.values(extras).sort((p, q) => p.at - q.at);
     run.startedAt = minDefined(x.startedAt, y.startedAt);
     run.endedAt = maxDefined(x.endedAt, y.endedAt);
-    if (run.endedAt && run.status === 'active' && (x.status === 'completed' || y.status === 'completed')) run.status = 'completed';
-    run.celebrated = !!(x.celebrated || y.celebrated);
+    if (x.status === 'completed' || y.status === 'completed') run.status = 'completed';
     out.runs[k] = run;
+  });
+  const dates = new Set(Object.keys(a.extras || {}).concat(Object.keys(b.extras || {})));
+  dates.forEach(d => {
+    const seen = {};
+    ((a.extras || {})[d] || []).concat((b.extras || {})[d] || []).forEach(x => { if (x && x.at != null) seen[x.at + '|' + (x.text || '')] = x; });
+    if (Object.keys(seen).length) out.extras[d] = Object.values(seen).sort((p, q) => p.at - q.at);
   });
   return out;
 }
@@ -169,22 +152,57 @@ function ts(r) { return (r && (r.ts || r.completedAt || r.endedAt || r.startedAt
 function minDefined(a, b) { const v = [a, b].filter(n => n != null); return v.length ? Math.min.apply(null, v) : null; }
 function maxDefined(a, b) { const v = [a, b].filter(n => n != null); return v.length ? Math.max.apply(null, v) : null; }
 
+/* ---------- outbox: one line to #schedule per finished ritual ---------- */
+function notify(text) {
+  if (!S.db.settings.notify) return;
+  S.db.outbox.push({ text, at: Date.now(), tries: 0 });
+  save();
+  flushOutbox();
+}
+let flushing = false;
+async function flushOutbox() {
+  if (!window.__WEBHOOK__ || flushing || !S.db.outbox.length) { renderChips(); return; }
+  flushing = true;
+  while (S.db.outbox.length) {
+    const item = S.db.outbox[0];
+    try {
+      const r = await fetch(window.__WEBHOOK__, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: item.text, username: 'Ritual Log' }) });
+      if (!r.ok) throw Object.assign(new Error('HTTP ' + r.status), { status: r.status });
+      S.db.outbox.shift(); save(); renderChips();
+      await new Promise(res => setTimeout(res, 350));
+    } catch (err) {
+      item.tries = (item.tries || 0) + 1; save();
+      if (item.tries > 3) setSync(S.sync, 'Could not reach #schedule — will retry');
+      break;                                   /* keep the queue; retry on the next tick */
+    }
+  }
+  flushing = false; renderChips(); renderSummary();
+}
+
 /* ---------- dates ---------- */
 const TZ = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 const D = {
   key(d = new Date()) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
   hhmm(ms) { const d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); },
   short(d = new Date()) {
-    const wd = d.toLocaleDateString('en-GB', { weekday: 'short' }).replace(/[.,]/g, '');
-    const dm = d.toLocaleDateString('en-GB', { day: '2-digit' });
-    const mo = d.toLocaleDateString('en-GB', { month: 'short' }).replace(/[.,]/g, '');
-    return wd + ' ' + dm + ' ' + mo;
+    return d.toLocaleDateString('en-GB', { weekday: 'short' }).replace(/[.,]/g, '') + ' ' +
+      d.toLocaleDateString('en-GB', { day: '2-digit' }) + ' ' +
+      d.toLocaleDateString('en-GB', { month: 'short' }).replace(/[.,]/g, '');
   },
   isoWeek(d = new Date()) {
     const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
-    const y = t.getUTCFullYear(); const start = new Date(Date.UTC(y, 0, 1));
-    return y + '-W' + String(Math.ceil(((t - start) / 864e5 + 1) / 7)).padStart(2, '0');
+    const y = t.getUTCFullYear();
+    return y + '-W' + String(Math.ceil(((t - new Date(Date.UTC(y, 0, 1))) / 864e5 + 1) / 7)).padStart(2, '0');
+  },
+  today() { return D.key(new Date()); },
+  weekdayCode(d = new Date()) { return DAYS[(d.getDay() + 6) % 7]; },
+  /* the date of a weekday inside the current week (Mon-based) */
+  dateOfWeekday(code) {
+    const now = new Date();
+    const diff = DAYS.indexOf(code) - DAYS.indexOf(D.weekdayCode(now));
+    return D.key(new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff));
   }
 };
 function dur(min) {
@@ -194,52 +212,36 @@ function dur(min) {
 /* live elapsed under a minute reads in seconds — a run in progress should never
    look like it has done nothing */
 function durLive(sec) { return sec < 60 ? Math.round(sec) + 's' : dur(sec / 60); }
-function plannedMinutes(step) {
-  if (step.minutes != null) return step.minutes;
-  if (step.start && step.end) {
+function planMinutes(ritual) {
+  if (ritual.minutes != null) return ritual.minutes;
+  if (ritual.start && ritual.end) {
     const p = s => { const [h, m] = s.split(':').map(Number); return h * 60 + m; };
-    return Math.max(0, p(step.end) - p(step.start));
+    return Math.max(0, p(ritual.end) - p(ritual.start));
   }
   return null;
 }
 
-/* ---------- runs ---------- */
-function runKey(ritual) { return ritual === 'day' ? 'day:' + D.key() : 'week:' + D.isoWeek(); }
-function getRun(ritual, create = true) {
-  const key = runKey(ritual);
+/* ---------- rituals and runs ---------- */
+function ritualsOfDay(code) { return (S.plan.rituals || []).filter(r => r.day === code).sort((a, b) => a.order - b.order); }
+function anyDayRituals() { return (S.plan.rituals || []).filter(r => !r.day); }
+function scopeOf(ritual) { return ritual.day ? D.dateOfWeekday(ritual.day) : D.isoWeek(); }
+function runKeyOf(ritual) { return ritual.id + ':' + scopeOf(ritual); }
+function getRunFor(ritual, create = true) {
+  const key = runKeyOf(ritual);
   let run = S.db.runs[key];
   if (!run && create) {
-    run = S.db.runs[key] = {
-      key, ritual, scope: ritual === 'day' ? D.key() : D.isoWeek(),
-      revision: S.plan.updated || null, startedAt: null, endedAt: null,
-      status: 'active', steps: {}, extras: [], celebrated: false, ts: Date.now()
-    };
+    run = S.db.runs[key] = { key, ritual: ritual.id, scope: scopeOf(ritual), revision: S.plan.updated || null,
+      startedAt: null, endedAt: null, status: 'active', steps: {}, ts: Date.now() };
     save();
   }
   return run;
 }
-/* A run is created when execution begins, not when a ritual is merely viewed:
-   read paths render a throwaway view object instead. */
+/* A run is created when execution begins, not when a ritual is viewed. */
 function viewRun(ritual) {
-  return getRun(ritual, false) || {
-    key: runKey(ritual), ritual, scope: ritual === 'day' ? D.key() : D.isoWeek(),
-    revision: S.plan.updated || null, startedAt: null, endedAt: null,
-    status: 'not started', steps: {}, extras: [], celebrated: false
-  };
+  return getRunFor(ritual, false) || { key: runKeyOf(ritual), ritual: ritual.id, scope: scopeOf(ritual),
+    revision: S.plan.updated || null, startedAt: null, endedAt: null, status: 'not started', steps: {} };
 }
-/* Spec: a ritual has at most one active run — a new run abandons an unfinished
-   previous one (the day is disposable; history is not). */
-function closeStaleRuns() {
-  const today = runKey('day'), week = runKey('week');
-  let changed = false;
-  for (const k in S.db.runs) {
-    const r = S.db.runs[k];
-    if (r.status === 'active' && k !== today && k !== week) {
-      r.status = 'abandoned'; r.endedAt = r.endedAt || Date.now(); r.ts = Date.now(); changed = true;
-    }
-  }
-  if (changed) { save(); markDirty(); }
-}
+function stepStatus(run, id) { const s = run.steps[id]; return s ? s.status : 'pending'; }
 function stepElapsed(run, id) {
   const s = run.steps[id]; if (!s) return 0;
   let sec = s.seconds || 0;
@@ -247,28 +249,43 @@ function stepElapsed(run, id) {
   return sec;
 }
 function activeStepId(run) { for (const id in run.steps) if (run.steps[id].status === 'active') return id; return null; }
-function ritualSteps(ritual) { return (S.plan.rituals[ritual] || {}).steps || []; }
-function stepTitle(ritual, step) {
-  if (ritual === 'day') {
-    const day = (S.plan.days || {})[D.key()] || {};
-    if (step.id === 'work-a' && day.work_a) return 'Work A · ' + day.work_a;
-    if (step.id === 'work-b' && day.work_b) return 'Work B · ' + day.work_b;
+function activeAnywhere() {
+  for (const k in S.db.runs) {
+    const r = S.db.runs[k];
+    if (r.status === 'active' && activeStepId(r)) return r.ritual;
   }
-  return step.title;
+  return null;
 }
-function runCounts(run, ritual) {
-  const steps = ritualSteps(ritual);
-  let done = 0, skipped = 0;
-  for (const st of steps) {
-    const s = run.steps[st.id];
-    if (s && (s.status === 'completed' || s.status === 'skipped')) { done++; if (s.skipped) skipped++; }
-  }
-  return { done, skipped, n: steps.length };
+function ritualState(ritual) {
+  const run = getRunFor(ritual, false);
+  const steps = ritual.steps || [];
+  if (!run || !steps.length) return 'pending';
+  const st = steps.map(s => stepStatus(run, s.id));
+  if (st.every(x => x === 'completed')) return 'completed';
+  if (st.every(x => x === 'completed' || x === 'skipped')) return 'skipped';
+  if (st.some(x => x === 'active')) return 'active';
+  return 'pending';
+}
+function ritualDone(ritual) { const s = ritualState(ritual); return s === 'completed' || s === 'skipped'; }
+function ritualRunMinutes(ritual) {
+  const run = getRunFor(ritual, false); if (!run) return 0;
+  let el = 0;
+  (ritual.steps || []).forEach(s => { el += stepElapsed(run, s.id); });
+  return el / 60;
+}
+function dayIsPast(code) { return DAYS.indexOf(code) < DAYS.indexOf(D.weekdayCode()); }
+function todayRituals() { return ritualsOfDay(D.weekdayCode()); }
+function todayComplete() { const l = todayRituals(); return l.length > 0 && l.every(ritualDone); }
+function dayProgress(code) { const l = ritualsOfDay(code); return { done: l.filter(ritualDone).length, n: l.length }; }
+function workMinutes(list) { return list.filter(r => r.kind === 'work').reduce((a, r) => a + ritualRunMinutes(r), 0); }
+function weekProgress() {
+  const l = S.plan.rituals || [];
+  return { done: l.filter(ritualDone).length, n: l.length, work: workMinutes(l) };
 }
 
 /* ---------- mutations ---------- */
 function startStep(ritual, id) {
-  const run = getRun(ritual);
+  const run = getRunFor(ritual);
   const now = Date.now();
   const cur = activeStepId(run);
   if (cur === id) return;
@@ -280,55 +297,62 @@ function startStep(ritual, id) {
   save(); haptic('light'); markDirty(); renderAll();
 }
 function completeStep(ritual, id, skipped = false) {
-  const run = getRun(ritual);
+  const run = getRunFor(ritual);
   const s = run.steps[id] || (run.steps[id] = { seconds: 0 });
-  if (s.status === 'completed' || s.status === 'skipped') return;   // completions are idempotent
+  if (s.status === 'completed' || s.status === 'skipped') return;      /* completions are idempotent */
   const now = Date.now();
+  const startedAt = s.startedAt;
   if (s.status === 'active' && s.startedAt) s.seconds = (s.seconds || 0) + (now - s.startedAt) / 1000;
   s.status = skipped ? 'skipped' : 'completed';
   s.skipped = skipped; s.completedAt = now; s.startedAt = null; s.ts = now;
   if (!run.startedAt) run.startedAt = now;
-  run.ts = now;
+  const el = stepElapsed(run, id);
+  const allDone = (ritual.steps || []).every(x => ['completed', 'skipped'].indexOf(stepStatus(run, x.id)) >= 0);
+  if (allDone) { run.status = 'completed'; run.endedAt = now; run.ts = now; }
   haptic(skipped ? 'light' : 'medium');
-  const c = runCounts(run, ritual);
-  if (c.n && c.done === c.n && !skipped) {                                  // last step → completion moment
-    run.status = 'completed'; run.endedAt = now; run.ts = now;
-    if (!run.celebrated) { run.celebrated = true; save(); markDirty(); renderAll(); completionMoment(); return; }
+  save(); markDirty();
+  notify(completionLine(ritual, startedAt, skipped, el, planMinutes(ritual)));
+  renderAll();
+  /* One ritual earns a check bloom; the whole day earns the confetti and the
+     bell — eleven rituals should not fire eleven parties. */
+  if (allDone) {
+    if (todayComplete()) { if (!run.celebrated) { run.celebrated = true; save(); completionMoment(true); } }
+    else completionMoment(false);
   }
-  save(); markDirty(); renderAll();
+}
+function completionLine(ritual, startedAt, skipped, elapsedSec, plan) {
+  if (skipped) return '↷ ' + ritual.title + ' — skipped';
+  const win = (startedAt ? D.hhmm(startedAt) + '–' : '') + D.hhmm(Date.now());
+  const mins = elapsedSec / 60;
+  const d = plan && mins > 20 ? ' (' + (mins - plan > 0 ? '+' : '') + Math.round(mins - plan) + 'm)' : (plan ? ' (plan ' + dur(plan) + ')' : '');
+  return '✅ ' + ritual.title + ' · ' + win + ' · ' + durLive(elapsedSec) + d;
 }
 function reopenStep(ritual, id) {
-  const run = getRun(ritual); const s = run.steps[id]; if (!s) return;
+  const run = getRunFor(ritual); const s = run.steps[id]; if (!s) return;
   s.status = 'pending'; s.skipped = false; s.completedAt = null; s.startedAt = null; s.ts = Date.now();
   if (run.status === 'completed') { run.status = 'active'; run.endedAt = null; run.ts = Date.now(); }
   save(); markDirty(); renderAll();
 }
 function pauseStep(ritual, id) {
-  const run = getRun(ritual); const s = run.steps[id];
+  const run = getRunFor(ritual); const s = run.steps[id];
   if (s && s.status === 'active') {
     s.seconds = (s.seconds || 0) + (Date.now() - s.startedAt) / 1000; s.startedAt = null; s.status = 'pending'; s.ts = Date.now();
     save(); markDirty(); renderAll();
   }
 }
-function finishRun(ritual) {
-  const run = getRun(ritual); const cur = activeStepId(run);
-  if (cur) { const c = run.steps[cur]; c.seconds = (c.seconds || 0) + (Date.now() - c.startedAt) / 1000; c.startedAt = null; c.status = 'pending'; c.ts = Date.now(); }
-  run.status = 'completed'; run.endedAt = Date.now(); run.ts = Date.now();
-  save(); markDirty(); renderAll(); toast('Run closed');
-}
 function abandonRun(ritual) {
-  const run = getRun(ritual);
+  const run = getRunFor(ritual); const cur = activeStepId(run);
+  if (cur) { const c = run.steps[cur]; c.seconds = (c.seconds || 0) + (Date.now() - c.startedAt) / 1000; c.startedAt = null; c.status = 'pending'; c.ts = Date.now(); }
   run.status = 'abandoned'; run.endedAt = Date.now(); run.ts = Date.now();
   save(); markDirty(); renderAll(); toast('Run abandoned — kept in history');
 }
-function addExtra(ritual, text, minutes) {
-  const run = getRun(ritual);
-  run.extras.push({ text, minutes: minutes || null, at: Date.now() });
-  run.ts = Date.now();
+function addExtra(dateKey, text, minutes) {
+  const list = S.db.extras[dateKey] || (S.db.extras[dateKey] = []);
+  list.push({ text, minutes: minutes || null, at: Date.now() });
   save(); markDirty(); renderAll();
 }
-function removeExtra(ritual, i) {
-  const run = getRun(ritual); run.extras.splice(i, 1); run.ts = Date.now();
+function removeExtra(dateKey, i) {
+  const list = S.db.extras[dateKey] || []; list.splice(i, 1); S.db.extras[dateKey] = list;
   save(); markDirty(); renderAll();
 }
 
@@ -353,26 +377,29 @@ function bell() {
     });
   } catch (e) {}
 }
-function completionMoment() {
+function completionMoment(full) {
   const el = document.getElementById('moment');
-  el.classList.add('on'); bell(); haptic('medium');
-  const colors = ['#C2410C', '#FB923C', '#15803D', '#4ADE80', '#A8A29E'];
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!reduce) {
-    for (let i = 0; i < 26; i++) {
-      const p = document.createElement('i');
-      p.className = 'confetti';
-      p.style.background = colors[i % colors.length];
-      p.style.left = (12 + Math.random() * 76) + 'vw'; p.style.top = '-12px';
-      p.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
-      document.body.appendChild(p);
-      const dx = (Math.random() - .5) * 160, dy = window.innerHeight * (.55 + Math.random() * .45), rot = Math.random() * 720;
-      p.animate([{ transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
-                 { transform: `translate(${dx}px,${dy}px) rotate(${rot}deg)`, opacity: 0 }],
-                { duration: 1500 + Math.random() * 700, easing: 'cubic-bezier(.2,.6,.4,1)' }).onfinish = () => p.remove();
+  el.classList.toggle('small', !full);
+  el.classList.add('on'); haptic('medium');
+  if (full) {
+    bell();
+    const colors = ['#C2410C', '#FB923C', '#15803D', '#4ADE80', '#A8A29E'];
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      for (let i = 0; i < 26; i++) {
+        const p = document.createElement('i');
+        p.className = 'confetti';
+        p.style.background = colors[i % colors.length];
+        p.style.left = (12 + Math.random() * 76) + 'vw'; p.style.top = '-12px';
+        p.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
+        document.body.appendChild(p);
+        const dx = (Math.random() - .5) * 160, dy = window.innerHeight * (.55 + Math.random() * .45), rot = Math.random() * 720;
+        p.animate([{ transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+                   { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(' + rot + 'deg)', opacity: 0 }],
+                  { duration: 1500 + Math.random() * 700, easing: 'cubic-bezier(.2,.6,.4,1)' }).onfinish = () => p.remove();
+      }
     }
   }
-  setTimeout(() => el.classList.remove('on'), 1500);
+  setTimeout(() => el.classList.remove('on'), full ? 1500 : 750);
 }
 let toastTimer = null;
 function toast(msg) {
@@ -394,46 +421,72 @@ function fallbackCopy(text, done) {
 }
 
 /* ---------- render ---------- */
-function renderAll() { renderHeader(); renderToday(); renderRitual(); renderSummary(); renderSync(); }
+function renderAll() { renderHeader(); renderToday(); renderWeek(); renderRitual(); renderSummary(); renderChips(); }
 
 function renderHeader() {
-  const now = new Date();
-  document.getElementById('clock').textContent = D.hhmm(now.getTime());
-  const wk = S.plan.week && S.plan.week.iso ? S.plan.week.iso : D.isoWeek();
-  document.getElementById('dateline').textContent = D.short(now);
-  document.getElementById('datesub').textContent = wk + (S.plan.week && S.plan.week.label ? ' · ' + S.plan.week.label : '') + ' · ' + TZ();
+  document.getElementById('clock').textContent = D.hhmm(Date.now());
+  document.getElementById('dateline').textContent = D.short();
+  document.getElementById('datesub').textContent =
+    (S.plan.week && S.plan.week.iso ? S.plan.week.iso : D.isoWeek()) + ' · ' + TZ();
 }
 
-function ring(pct) {
-  const r = 19, c = 2 * Math.PI * r;
-  return '<div class="ring"><svg width="46" height="46" viewBox="0 0 46 46">' +
-    '<circle cx="23" cy="23" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="4"/>' +
-    '<circle cx="23" cy="23" r="' + r + '" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" ' +
-    'stroke-dasharray="' + c + '" stroke-dashoffset="' + (c * (1 - pct / 100)) + '"/></svg>' +
-    '<span class="pct tnum">' + Math.round(pct) + '%</span></div>';
+function statusDot(state, past) {
+  if (state === 'completed') return '<span class="dot ok"></span>';
+  if (state === 'skipped') return '<span class="dot skip"></span>';
+  if (state === 'active') return '<span class="dot live"></span>';
+  return '<span class="dot' + (past ? ' miss' : '') + '"></span>';
+}
+function statusBadge(ritual, state) {
+  if (state === 'completed') return '<span class="badge ok">done</span>';
+  if (state === 'skipped') return '<span class="badge n">skipped</span>';
+  const run = getRunFor(ritual, false);
+  if (state === 'active' && run) return '<span class="badge a tnum">' + durLive(stepElapsed(run, activeStepId(run))) + '</span>';
+  const plan = planMinutes(ritual);
+  return '<span class="badge n tnum">' + (plan ? dur(plan) : '—') + '</span>';
+}
+function ritualRow(ritual) {
+  const state = ritualState(ritual);
+  const run = getRunFor(ritual, false);
+  const past = ritual.day ? dayIsPast(ritual.day) && state === 'pending' : false;
+  const el = ritualRunMinutes(ritual);
+  const plan = planMinutes(ritual);
+  const sub = [
+    ritual.start ? 'plan ' + ritual.start + (ritual.end ? '–' + ritual.end : '') : null,
+    el >= 1 ? dur(el) + (plan && state === 'completed' ? ' / ' + dur(plan) : '') : null,
+    run && run.startedAt && state === 'active' ? 'since ' + D.hhmm(run.startedAt) : null,
+    past ? 'missed' : null
+  ].filter(Boolean).join(' · ');
+  return '<button class="row-ritual' + (state === 'completed' || state === 'skipped' ? ' done' : '') + '" data-open-ritual="' + ritual.id + '">' +
+    statusDot(state, past) +
+    '<span class="body"><span class="t">' + esc(ritual.title) + '</span>' + (sub ? '<span class="s">' + esc(sub) + '</span>' : '') + '</span>' +
+    statusBadge(ritual, state) + '</button>';
+}
+function sectionHead(label, right) {
+  return '<div class="dayhead"><span>' + esc(label) + '</span><span class="tnum">' + esc(right || '') + '</span></div>';
 }
 
 function renderToday() {
-  const banner = document.getElementById('today-banner');
-  const anchorList = (S.plan.days && S.plan.days[D.key()] && S.plan.days[D.key()].anchors) || [];
-  let html = anchorList.length ? '<div class="banner"><b>Today:</b> ' + anchorList.map(esc).join(' · ') + '</div>' : '';
-  if (!S.plan.updated || S.planError) {
-    html += '<div class="banner"><b>Plan not loaded</b>' + (S.planError ? ' (' + esc(S.planError) + ')' : '') +
-      ': showing the skeleton saved on this device.</div>';
-  }
-  banner.innerHTML = html;
+  const code = D.weekdayCode();
+  const list = ritualsOfDay(code);
+  const p = dayProgress(code);
+  const anchors = ((S.plan.days || {})[D.today()] || {}).anchors || [];
+  let html = anchors.length ? '<div class="banner"><b>Today:</b> ' + anchors.map(esc).join(' · ') + '</div>' : '';
+  if (S.planError || !S.plan.updated) html += '<div class="banner"><b>Plan not loaded</b>' + (S.planError ? ' (' + esc(S.planError) + ')' : '') + '.</div>';
+  document.getElementById('today-banner').innerHTML = html;
 
-  document.getElementById('ritual-cards').innerHTML = ['day', 'week'].map(r => {
-    const run = getRun(r, false);
-    const c = run ? runCounts(run, r) : { done: 0, n: ritualSteps(r).length, skipped: 0 };
-    const pct = c.n ? (c.done / c.n) * 100 : 0;
-    const rtitle = (S.plan.rituals[r] || {}).title || r;
-    const sub = run ? c.done + '/' + c.n + ' steps' + (c.skipped ? ' · ' + c.skipped + ' skipped' : '') +
-      (run.endedAt && run.startedAt ? ' · ' + dur((run.endedAt - run.startedAt) / 60000) : '') +
-      (run.status === 'active' ? '' : ' · ' + run.status) : 'not started';
-    return '<button class="rcard" data-open="' + r + '">' + ring(pct) +
-      '<span class="body"><span class="t">' + esc(rtitle) + '</span><span class="m">' + esc(sub) + '</span></span></button>';
-  }).join('');
+  document.getElementById('today-head').innerHTML =
+    '<span class="k">' + DAY_LABEL[code] + ' rituals</span><span class="spacer"></span>' +
+    '<span class="badge ' + (p.n && p.done === p.n ? 'ok' : 'n') + ' tnum">' + p.done + '/' + p.n + '</span>';
+
+  document.getElementById('today-list').innerHTML = list.length
+    ? list.map(ritualRow).join('')
+    : '<div class="empty">Sunday is a free day — nothing is scheduled. The "any day this week" rituals live on the Week tab.</div>';
+
+  const extras = S.db.extras[D.today()] || [];
+  document.getElementById('extras').innerHTML = extras.length
+    ? '<ul class="plain">' + extras.map((x, i) => '<li><span>' + esc(x.text) + '</span><span class="sp tnum">' + D.hhmm(x.at) +
+        (x.minutes ? ' · ' + dur(x.minutes) : '') + '</span><button class="b sm ghost" data-xdel="' + i + '">×</button></li>').join('') + '</ul>'
+    : '<div class="micro muted">Nothing extra logged today.</div>';
 
   document.getElementById('goals').innerHTML = (S.plan.goals || []).map(g =>
     '<div class="goal"><div class="gh"><span class="k">' + esc(g.project) + '</span>' +
@@ -443,88 +496,101 @@ function renderToday() {
     '<div class="empty">The week goals arrive with the week plan.</div>';
 }
 
-function renderRitual() {
-  const ritual = S.ritual, run = viewRun(ritual);
-  const steps = ritualSteps(ritual);
-  const c = runCounts(run, ritual);
-  document.getElementById('rv-kicker').textContent = ritual === 'day' ? 'Ritual of the day' : 'Ritual of the week';
-  document.getElementById('rv-title').textContent = (S.plan.rituals[ritual] || {}).title || ritual;
-  document.getElementById('rv-pct').textContent = (c.n ? Math.round((c.done / c.n) * 100) : 0) + '%';
-  document.getElementById('rv-state').textContent = run.status === 'active' ? 'active run' : run.status;
-  document.getElementById('rv-state').className = 'badge ' + (run.status === 'active' ? 'a' : run.status === 'completed' ? 'ok' : 'n');
-  document.getElementById('rv-sub').textContent = [
-    ritual === 'day' ? D.key() : D.isoWeek(),
-    (S.plan.rituals[ritual] || {}).order_mode === 'free' ? 'any order' : 'in order',
-    c.done + '/' + c.n + ' completed', c.skipped + ' skipped',
-    run.startedAt ? 'since ' + D.hhmm(run.startedAt) : 'not started'
-  ].join(' · ');
-  document.getElementById('rv-switch').innerHTML = ['day', 'week'].map(r =>
-    '<button class="b sm' + (r === ritual ? ' primary' : '') + '" data-open="' + r + '">' + esc((S.plan.rituals[r] || {}).title || r) + '</button>').join('') +
-    '<button class="b sm ghost" id="rv-moment">Moment</button>';
+function renderWeek() {
+  const w = weekProgress();
+  document.getElementById('week-head').innerHTML =
+    '<span class="k">' + esc((S.plan.week && S.plan.week.label) || 'This week') + '</span><span class="spacer"></span>' +
+    '<span class="badge ' + (w.n && w.done === w.n ? 'ok' : 'n') + ' tnum">' + w.done + '/' + w.n + '</span>';
+  let html = '';
+  DAYS.slice(0, 6).forEach(code => {
+    const list = ritualsOfDay(code); if (!list.length) return;
+    const p = dayProgress(code);
+    html += sectionHead(DAY_LABEL[code], p.done + '/' + p.n) + list.map(ritualRow).join('');
+  });
+  const any = anyDayRituals();
+  if (any.length) html += sectionHead('Any day this week', any.filter(ritualDone).length + '/' + any.length) + any.map(ritualRow).join('');
+  document.getElementById('week-list').innerHTML = html || '<div class="empty">No rituals in the plan yet.</div>';
+}
 
-  if (!steps.length) {
+function renderRitual() {
+  const ritual = S.byId[S.ritualId];
+  const kicker = document.getElementById('rv-kicker');
+  if (!ritual) {
+    document.getElementById('rv-nav').innerHTML = '';
+    kicker.textContent = 'Ritual';
+    document.getElementById('rv-title').textContent = 'Pick a ritual';
+    document.getElementById('rv-sub').textContent = '';
+    document.getElementById('rv-pct').textContent = '—';
+    document.getElementById('rv-state').textContent = '';
+    document.getElementById('rv-state').className = 'badge n';
     document.getElementById('steps').innerHTML = '';
     document.getElementById('steps-empty').hidden = false;
-    document.getElementById('steps-empty').textContent = 'This ritual has no steps yet — the week plan brings them.';
-  } else {
-    document.getElementById('steps-empty').hidden = true;
-    document.getElementById('steps').innerHTML = steps.map((st, i) => stepRow(ritual, run, st, i)).join('');
-    wireSlides(ritual);
+    document.getElementById('steps-empty').textContent = 'Open one from Today or Week.';
+    document.getElementById('rv-tools').innerHTML = '';
+    return;
   }
+  const run = viewRun(ritual);
+  const steps = ritual.steps || [];
+  const state = ritualState(ritual);
+  const doneSteps = steps.filter(s => ['completed', 'skipped'].indexOf(stepStatus(run, s.id)) >= 0).length;
+  document.getElementById('rv-nav').innerHTML =
+    '<button class="b sm ghost" data-tab="today">Today</button><button class="b sm ghost" data-tab="week">Week</button>';
+  kicker.textContent = ritual.day ? DAY_LABEL[ritual.day] + ' ritual · ' + scopeOf(ritual) : 'Any day this week · ' + D.isoWeek();
+  document.getElementById('rv-title').textContent = ritual.title;
+  document.getElementById('rv-pct').textContent = (steps.length ? Math.round((doneSteps / steps.length) * 100) : 0) + '%';
+  document.getElementById('rv-state').textContent = state === 'active' ? 'active run' : state;
+  document.getElementById('rv-state').className = 'badge ' + (state === 'active' ? 'a' : state === 'completed' ? 'ok' : 'n');
+  document.getElementById('rv-sub').textContent = [
+    planMinutes(ritual) ? 'plan ' + dur(planMinutes(ritual)) + (ritual.start ? ' · ' + ritual.start + (ritual.end ? '–' + ritual.end : '') : '') : '',
+    steps.length + (steps.length === 1 ? ' step' : ' steps'),
+    run.startedAt ? 'since ' + D.hhmm(run.startedAt) : 'not started'
+  ].filter(Boolean).join(' · ');
 
-  document.getElementById('extras').innerHTML = run.extras.length
-    ? '<ul class="plain">' + run.extras.map((x, i) => '<li><span>' + esc(x.text) + '</span><span class="sp tnum">' +
-        D.hhmm(x.at) + (x.minutes ? ' · ' + dur(x.minutes) : '') + '</span><button class="b sm ghost" data-xdel="' + i + '">×</button></li>').join('') + '</ul>'
-    : '<div class="micro muted">Nothing extra logged today.</div>';
+  document.getElementById('steps-empty').hidden = steps.length > 0;
+  document.getElementById('steps').innerHTML = steps.map((st, i) => stepRow(ritual, run, st, i)).join('');
+  wireSlides(ritual);
+
+  document.getElementById('rv-tools').innerHTML =
+    (run.status === 'active' && !activeStepId(run) ? '<button class="b sm ghost" id="rv-abandon">Abandon run</button>' : '') +
+    (steps.length && state !== 'completed' && state !== 'skipped' ? '<button class="b sm ghost" id="rv-done">Close the run</button>' : '');
 }
 
 function stepRow(ritual, run, st, i) {
   const s = run.steps[st.id] || {};
   const status = s.status || 'pending';
-  const plan = plannedMinutes(st);
+  const plan = planMinutes(ritual);
   const el = stepElapsed(run, st.id);
-  const elMin = el / 60;
-  const over = plan && status === 'active' && elMin > plan;
-  const win = st.start ? st.start + (st.end ? '–' + st.end : '') : (plan ? dur(plan) : '');
-  const actual = s.completedAt || s.startedAt
-    ? [s.startedAt ? D.hhmm(s.startedAt) : null, s.completedAt ? D.hhmm(s.completedAt) : 'now'].filter(Boolean).join('–')
-    : null;
-  const delta = plan && el > 20 ? Math.round(elMin - plan) : 0;
+  const over = plan && status === 'active' && el / 60 > plan;
+  const actual = (s.completedAt || s.startedAt)
+    ? [s.startedAt ? D.hhmm(s.startedAt) : null, s.completedAt ? D.hhmm(s.completedAt) : 'now'].filter(Boolean).join('–') : null;
 
   let head = '';
-  if (status === 'completed') head = '<span class="badge ok">' + (s.skipped ? 'skipped' : 'done') + '</span>';
+  if (status === 'completed') head = '<span class="badge ok">done</span>';
   else if (status === 'skipped') head = '<span class="badge n">skipped</span>';
   else if (status === 'active') head = '<span class="badge ' + (over ? 'warn' : 'a') + ' tnum">' + durLive(el) + '</span>';
   else head = '<span class="badge n tnum">' + (plan ? dur(plan) : '—') + '</span>';
 
-  const sub = [
-    win ? 'plan ' + win : null,
-    actual ? actual + (delta ? ' (' + (delta > 0 ? '+' : '') + delta + 'm)' : '') : null,
-    st.optional ? 'optional' : null
-  ].filter(Boolean).join(' · ');
-
+  const sub = [actual, st.optional ? 'optional' : null].filter(Boolean).join(' · ');
   const prog = status === 'active'
-    ? '<div class="prog"><span class="bar"><i style="width:' + Math.min(100, plan ? (elMin / plan) * 100 : 0) + '%"></i></span>' +
+    ? '<div class="prog"><span class="bar"><i style="width:' + Math.min(100, plan ? (el / 60 / plan) * 100 : 0) + '%"></i></span>' +
       '<span class="micro muted tnum">' + durLive(el) + (plan ? ' / ' + dur(plan) : '') + '</span></div>'
     : '';
 
   const acts = [];
   if (status === 'pending') acts.push('<button class="b sm" data-start="' + st.id + '">Start</button>');
   if (status === 'active') acts.push('<button class="b sm" data-pause="' + st.id + '">Pause</button>');
-  acts.push('<button class="b sm ghost" data-skip="' + st.id + '">' + (status === 'skipped' || status === 'completed' ? 'Reopen' : 'Skip') + '</button>');
+  acts.push('<button class="b sm ghost" data-skip="' + st.id + '">' + (status === 'completed' || status === 'skipped' ? 'Reopen' : 'Skip') + '</button>');
 
   const slide = (status === 'completed' || status === 'skipped') ? '' :
     '<div class="slide' + (S.db.settings.slide ? '' : ' tapmode') + '" data-slide="' + st.id + '">' +
       '<div class="fill"></div><div class="hint">' + (S.db.settings.slide ? 'Slide to complete' : 'Tap to complete') + '</div>' +
       (S.db.settings.slide ? '<div class="knob" role="slider" tabindex="0" aria-label="Slide to complete ' + esc(st.title) + '">→</div>' : '') +
     '</div>';
-
-  const alt = (status === 'completed' || status === 'skipped') ? '' :
-    '<button class="b sm" data-alt="' + st.id + '">Complete</button>';
+  const alt = (status === 'completed' || status === 'skipped') ? '' : '<button class="b sm" data-alt="' + st.id + '">Complete</button>';
 
   return '<li class="step ' + status + '" data-step="' + st.id + '">' +
     '<div class="sr"><span class="idx tnum">' + (i + 1) + '</span><span class="body">' +
-    '<div class="t">' + esc(stepTitle(ritual, st)) + '</div>' +
+    '<div class="t">' + esc(st.title) + '</div>' +
     (sub ? '<div class="sub">' + esc(sub) + '</div>' : '') + prog +
     '</span><span class="state">' + head + '</span></div>' +
     slide + '<div class="step-acts">' + acts.join('') + alt + '</div></li>';
@@ -553,10 +619,7 @@ function wireSlides(ritual) {
       const down = e => { dragging = true; x0 = (e.touches ? e.touches[0].clientX : e.clientX);
         try { if (knob.setPointerCapture && e.pointerId != null) knob.setPointerCapture(e.pointerId); } catch (err) {} };
       const move = e => { if (!dragging) return; const x = (e.touches ? e.touches[0].clientX : e.clientX); dx = Math.max(0, x - x0); paint(); if (e.cancelable) e.preventDefault(); };
-      const up = () => {
-        if (!dragging) return; dragging = false;
-        if (dx / max() > .65) completeStep(ritual, id); else reset();
-      };
+      const up = () => { if (!dragging) return; dragging = false; if (dx / max() > .65) completeStep(ritual, id); else reset(); };
       knob.addEventListener('pointerdown', down); knob.addEventListener('pointermove', move);
       knob.addEventListener('pointerup', up); knob.addEventListener('pointercancel', up);
       knob.addEventListener('touchstart', down, { passive: true });
@@ -570,102 +633,110 @@ function wireSlides(ritual) {
 }
 
 function renderSummary() {
-  const ritual = S.ritual, run = viewRun(ritual);
-  const c = runCounts(run, ritual);
-  const total = run.startedAt ? ((run.endedAt || Date.now()) - run.startedAt) / 60000 : 0;
-  const worked = ritualSteps(ritual).filter(st => st.kind === 'work').reduce((a, st) => a + stepElapsed(run, st.id) / 60, 0);
-  const plannedWork = ritualSteps(ritual).filter(st => st.kind === 'work').reduce((a, st) => a + (plannedMinutes(st) || 0), 0);
+  const list = todayRituals();
+  const p = dayProgress(D.weekdayCode());
+  const w = weekProgress();
   const rows = [
-    ['Steps completed', c.done + '/' + c.n],
-    ['Skipped', String(c.skipped)],
-    ['Run duration', total ? dur(total) : '—'],
-    ['Work', worked ? dur(worked) + (plannedWork ? ' / plan ' + dur(plannedWork) : '') : '—'],
-    ['Extras', run.extras.length ? run.extras.length + ' · ' + dur(run.extras.reduce((a, x) => a + (x.minutes || 0), 0)) : '—'],
-    ['Sync', S.sync === 'synced' ? 'shared log' : S.sync === 'local' ? 'this device only' : (S.syncMsg || S.sync)]
+    ['Today', p.done + '/' + p.n + ' rituals'],
+    ['Work today', workMinutes(list) ? dur(workMinutes(list)) : '—'],
+    ['Week', w.done + '/' + w.n + ' rituals'],
+    ['Week work', w.work ? dur(w.work) : '—'],
+    ['To send', S.db.outbox.length ? S.db.outbox.length + ' line(s) queued' : 'nothing waiting'],
+    ['Shared log', S.sync === 'synced' ? 'up to date' : S.sync === 'local' ? 'this device only' : (S.syncMsg || S.sync)]
   ];
-  document.getElementById('summary').innerHTML = rows.map(r => '<div class="kv"><span class="k">' + r[0] + '</span><span class="v tnum">' + esc(r[1]) + '</span></div>').join('') +
-    '<div class="micro muted" style="margin-top:10px">Plan revision: ' + esc(run.revision || '—') + '</div>';
-  document.getElementById('sum-state').textContent = run.status;
+  document.getElementById('summary').innerHTML = rows.map(r =>
+    '<div class="kv"><span class="k">' + r[0] + '</span><span class="v tnum">' + esc(r[1]) + '</span></div>').join('') +
+    '<div class="micro muted" style="margin-top:10px">Plan revision: ' + esc(S.plan.updated || '—') + '</div>';
 
-  const hist = Object.values(S.db.runs).sort((a, b) => (b.startedAt || 0) - (a.startedAt || 0)).slice(0, 40);
-  document.getElementById('history').innerHTML = hist.map(r => {
-    const rc = runCounts(r, r.ritual);
-    const t = r.startedAt ? ((r.endedAt || r.startedAt) - r.startedAt) / 60000 : 0;
-    return '<li><span>' + r.scope + ' · ' + (r.ritual === 'day' ? 'Day' : 'Week') + '</span><span class="sp tnum">' + rc.done + '/' + rc.n +
-      (t ? ' · ' + dur(t) : '') + ' · ' + r.status + '</span></li>';
-  }).join('');
+  const ta = document.getElementById('log-day');
+  if (ta && document.activeElement !== ta) ta.value = dayLog();
+  document.getElementById('send-day').hidden = !window.__WEBHOOK__;
+  document.getElementById('send-note').textContent = window.__WEBHOOK__
+    ? 'Every ritual you finish is already posted to #schedule on its own. This sends the whole day in one message.'
+    : 'No webhook configured: use Copy and paste it into #schedule.';
+
+  const hist = [];
+  Object.keys(S.db.runs || {}).forEach(k => {
+    const run = S.db.runs[k];
+    const ritual = S.byId[run.ritual];
+    if (!ritual) return;
+    Object.keys(run.steps || {}).forEach(sid => {
+      const s = run.steps[sid];
+      if (!s.completedAt) return;
+      hist.push({ at: s.completedAt, title: ritual.title, state: s.skipped ? 'skipped' : 'completed', sec: s.seconds || 0, scope: run.scope });
+    });
+  });
+  hist.sort((a, b) => b.at - a.at);
+  document.getElementById('history').innerHTML = hist.slice(0, 25).map(h =>
+    '<li><span>' + esc(h.title) + '</span><span class="sp tnum">' + h.scope + ' · ' + D.hhmm(h.at) +
+    ' · ' + (h.sec ? dur(h.sec / 60) : '—') + ' · ' + h.state + '</span></li>').join('');
   document.getElementById('history-empty').hidden = hist.length > 0;
 
   document.getElementById('settings').innerHTML =
     '<div class="toggle ' + (S.db.settings.slide ? 'on' : '') + '" data-set="slide"><span class="lbl">Slide to complete<small>Off: the track completes on a tap instead.</small></span><span class="sw"></span></div>' +
-    '<div class="toggle ' + (S.db.settings.sound ? 'on' : '') + '" data-set="sound"><span class="lbl">Chime when a run ends<small>One short bell on completion.</small></span><span class="sw"></span></div>';
+    '<div class="toggle ' + (S.db.settings.sound ? 'on' : '') + '" data-set="sound"><span class="lbl">Sound<small>One bell when the whole day is done.</small></span><span class="sw"></span></div>' +
+    '<div class="toggle ' + (S.db.settings.notify ? 'on' : '') + '" data-set="notify"><span class="lbl">Post each completion to #schedule<small>One line per finished ritual, sent the moment it happens.</small></span><span class="sw"></span></div>';
 
-  const ta = document.getElementById('log-day');
-  if (ta && document.activeElement !== ta) ta.value = shareText();
-  document.getElementById('send-day').hidden = !window.__WEBHOOK__;
-  document.getElementById('send-note').textContent = window.__WEBHOOK__
-    ? 'Sends the text above to #schedule exactly as it stands.'
-    : 'No webhook configured: use Copy and paste it into #schedule.';
   document.getElementById('state-info').textContent =
     'Plan ' + (S.plan.updated || '—') + ' · saved ' + (S.db.updated ? new Date(S.db.updated).toLocaleString('en-GB') : '—') +
-    ' · ' + Object.keys(S.db.runs).length + ' runs on this device';
+    ' · ' + Object.keys(S.db.runs).length + ' runs · ' + (S.plan.rituals || []).length + ' rituals';
 }
 
-const SYNC_LABEL = { local: 'this device', pending: 'saving', syncing: 'syncing', synced: 'synced', failed: 'not saved', conflict: 'conflict' };
-const SYNC_CLASS = { local: 'n', pending: 'a', syncing: 'a', synced: 'ok', failed: 'warn', conflict: 'warn' };
-function renderSync() {
+const SYNC_LABEL = { local: 'this device', pending: 'saving', syncing: 'syncing', synced: 'synced', failed: 'not saved' };
+const SYNC_CLASS = { local: 'n', pending: 'a', syncing: 'a', synced: 'ok', failed: 'warn' };
+function renderChips() {
+  if (!S.db) return;
   const chip = document.getElementById('sync-chip');
   const cls = SYNC_CLASS[S.sync] || 'n';
   chip.className = 'badge ' + cls;
   chip.textContent = SYNC_LABEL[S.sync] || S.sync;
-  const el = document.getElementById('sync-card');
-  if (!el) return;
+  chip.title = S.syncMsg || '';
+  const queued = S.db.outbox.length;
+  const q = document.getElementById('queue-chip');
+  q.hidden = queued === 0;
+  q.textContent = queued + ' to send';
+  q.title = 'Completion lines waiting to reach #schedule';
+  const card = document.getElementById('sync-card');
+  if (!card) return;
   const tok = token();
-  el.innerHTML =
+  card.innerHTML =
     '<div class="card-head"><span class="k">Shared log</span><span class="spacer"></span><span class="badge ' + cls + '">' + esc(chip.textContent) + '</span></div>' +
-    '<div class="small muted" style="margin-bottom:10px">' + esc(S.syncMsg || (tok ? 'Connected.' : 'Not connected — runs stay on this device.')) + '</div>' +
+    '<div class="small muted" style="margin-bottom:10px">' + esc(S.syncMsg || (tok ? 'Connected.' : 'Not connected — runs stay on this device.')) +
+      (queued ? ' · ' + queued + ' completion line(s) still to reach #schedule.' : '') + '</div>' +
     '<div class="row"><input type="password" id="tok" autocomplete="off" placeholder="GitHub token with gist access" value="' + (tok ? '••••••••••••••••' : '') + '"></div>' +
     '<div class="row">' +
       '<button class="b sm primary" id="tok-save">' + (tok ? 'Replace token' : 'Connect') + '</button>' +
       '<button class="b sm" id="sync-now">Sync now</button>' +
       (tok ? '<button class="b sm ghost" id="tok-clear">Disconnect</button>' : '') +
     '</div>' +
-    '<div class="micro muted" style="margin-top:10px">One private gist holds the log, and both devices read and write it — a step completed on the phone shows up on the laptop. ' +
-    'The token stays in this browser, needs only <b>gist</b> access and can be revoked whenever. ' +
-    '<a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Ritual%20Log" target="_blank" rel="noopener">Create one</a>.</div>';
+    '<div class="micro muted" style="margin-top:10px">One private gist holds the log; both devices read and write it. The token stays in this browser, needs only <b>gist</b> access and can be revoked whenever — ' +
+    '<a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Ritual%20Log" target="_blank" rel="noopener">create one</a>. #schedule messages work without it.</div>';
 }
 
-/* ---------- share text (the run summary, in the channel's shape) ---------- */
-function shareText() {
-  const ritual = 'day', run = getRun(ritual, false);
+/* ---------- the day's log, shaped for the channel ---------- */
+function dayLog() {
+  const code = D.weekdayCode();
+  const list = ritualsOfDay(code);
+  const p = dayProgress(code);
   const lines = ['**Ritual Log · ' + D.short() + '**'];
-  if (!run) { lines.push('No run yet today.'); }
-  else {
-    const c = runCounts(run, ritual);
-    const total = run.startedAt ? ((run.endedAt || Date.now()) - run.startedAt) / 60000 : 0;
-    const worked = ritualSteps(ritual).filter(st => st.kind === 'work').reduce((a, st) => a + stepElapsed(run, st.id) / 60, 0);
-    lines.push('Day ' + c.done + '/' + c.n + (c.skipped ? ' · ' + c.skipped + ' skipped' : '') +
-      (total ? ' · ' + dur(total) : '') + (worked ? ' · work ' + dur(worked) : ''));
-    for (const st of ritualSteps(ritual)) {
-      const s = run.steps[st.id]; if (!s) continue;
-      const plan = plannedMinutes(st);
-      const el = stepElapsed(run, st.id) / 60;
-      const title = stepTitle(ritual, st);
-      if (s.status === 'completed') {
-        const d = plan && el > 20 ? ' (' + (el - plan > 0 ? '+' : '') + Math.round(el - plan) + 'm)' : (plan ? ' (plan ' + dur(plan) + ')' : '');
-        lines.push('- ✅ ' + (s.startedAt ? D.hhmm(s.startedAt) + '–' : '') + (s.completedAt ? D.hhmm(s.completedAt) : '') + ' ' + title + ' — ' + dur(el) + d);
-      } else if (s.status === 'skipped') lines.push('- ↷ ' + title + ' — skipped');
-      else if (s.status === 'active') lines.push('- ▶ ' + title + ' — running ' + dur(el) + (plan ? ' / ' + dur(plan) : ''));
-    }
-    for (const x of run.extras) lines.push('- ＋ ' + D.hhmm(x.at) + ' ' + x.text + (x.minutes ? ' (' + dur(x.minutes) + ')' : ''));
-    const wr = getRun('week', false);
-    if (wr) { const wc = runCounts(wr, 'week'); lines.push('Week ' + wc.done + '/' + wc.n + ' done' + (wc.skipped ? ' · ' + wc.skipped + ' skipped' : '')); }
-    for (const g of (S.plan.goals || []).slice(0, 3)) lines.push('- ' + g.project + ': ' + (g.detail || g.headline || ''));
-  }
+  lines.push(DAY_LABEL[code] + ' ' + p.done + '/' + p.n + ' rituals' + (workMinutes(list) ? ' · work ' + dur(workMinutes(list)) : ''));
+  list.forEach(r => {
+    const state = ritualState(r);
+    const run = getRunFor(r, false);
+    const key = run && Object.keys(run.steps)[0];
+    const st = key ? run.steps[key] : null;
+    if (state === 'completed') lines.push('- ✅ ' + r.title + (st && st.seconds ? ' — ' + durLive(st.seconds) : ''));
+    else if (state === 'skipped') lines.push('- ↷ ' + r.title + ' — skipped');
+    else if (state === 'active') lines.push('- ▶ ' + r.title + ' — running');
+  });
+  (S.db.extras[D.today()] || []).forEach(x => lines.push('- ＋ ' + D.hhmm(x.at) + ' ' + x.text + (x.minutes ? ' (' + dur(x.minutes) + ')' : '')));
+  const w = weekProgress();
+  lines.push('Week ' + w.done + '/' + w.n + ' rituals');
+  (S.plan.goals || []).slice(0, 3).forEach(g => lines.push('- ' + g.project + ': ' + (g.detail || g.headline || '')));
   return lines.join('\n');
 }
 
-async function sendToSchedule() {
+async function sendDayLog() {
   const btn = document.getElementById('send-day');
   const text = document.getElementById('log-day').value;
   if (!window.__WEBHOOK__) { copyText(text, 'Copied — paste it into #schedule'); return; }
@@ -676,7 +747,7 @@ async function sendToSchedule() {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     toast('Sent to #schedule');
   } catch (e) { toast('Could not send — use Copy'); }
-  btn.disabled = false; btn.textContent = 'Send to #schedule';
+  btn.disabled = false; btn.textContent = 'Send the whole day';
 }
 
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
@@ -686,30 +757,45 @@ function tab(name) {
   S.tab = name;
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
   document.getElementById('view-today').hidden = name !== 'today';
+  document.getElementById('view-week').hidden = name !== 'week';
   document.getElementById('view-ritual').hidden = name !== 'ritual';
   document.getElementById('view-summary').hidden = name !== 'summary';
   window.scrollTo({ top: 0 });
 }
+function openRitual(id) {
+  S.ritualId = id;
+  tab('ritual'); renderAll();
+}
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('button, .rcard, .toggle, [data-xdel]');
+  const t = e.target.closest('button, .row-ritual, .toggle, [data-xdel]');
   if (!t) return;
+  if (t.dataset.openRitual) return openRitual(t.dataset.openRitual);
   if (t.dataset.tab) return tab(t.dataset.tab);
-  if (t.dataset.open) { S.ritual = t.dataset.open; tab('ritual'); renderAll(); return; }
-  if (t.dataset.start) return startStep(S.ritual, t.dataset.start);
-  if (t.dataset.pause) return pauseStep(S.ritual, t.dataset.pause);
-  if (t.dataset.alt) return completeStep(S.ritual, t.dataset.alt);
-  if (t.dataset.skip) { const id = t.dataset.skip; const run = getRun(S.ritual); const st = run.steps[id];
-    if (st && (st.status === 'completed' || st.status === 'skipped')) reopenStep(S.ritual, id); else completeStep(S.ritual, id, true); return; }
-  if (t.id === 'rv-moment') return completionMoment();
-  if (t.id === 'rv-finish') return finishRun(S.ritual);
-  if (t.id === 'rv-abandon') return abandonRun(S.ritual);
-  if (t.id === 'x-add') { const tx = document.getElementById('x-text').value.trim(); const mn = Number(document.getElementById('x-min').value) || null;
-    if (!tx) return toast('Write what you did first'); addExtra(S.ritual, tx, mn); document.getElementById('x-text').value = ''; document.getElementById('x-min').value = ''; return; }
-  if (t.dataset.xdel != null) return removeExtra(S.ritual, Number(t.dataset.xdel));
+  const ritual = S.byId[S.ritualId];
+  if (t.dataset.start) return ritual ? startStep(ritual, t.dataset.start) : null;
+  if (t.dataset.pause) return ritual ? pauseStep(ritual, t.dataset.pause) : null;
+  if (t.dataset.alt) return ritual ? completeStep(ritual, t.dataset.alt) : null;
+  if (t.dataset.skip) {
+    if (!ritual) return;
+    const run = getRunFor(ritual); const st = run.steps[t.dataset.skip];
+    if (st && (st.status === 'completed' || st.status === 'skipped')) reopenStep(ritual, t.dataset.skip);
+    else completeStep(ritual, t.dataset.skip, true);
+    return;
+  }
+  if (t.id === 'rv-abandon') return ritual ? abandonRun(ritual) : null;
+  if (t.id === 'x-add') {
+    const tx = document.getElementById('x-text').value.trim();
+    const mn = Number(document.getElementById('x-min').value) || null;
+    if (!tx) return toast('Write what you did first');
+    addExtra(D.today(), tx, mn);
+    document.getElementById('x-text').value = ''; document.getElementById('x-min').value = '';
+    return;
+  }
+  if (t.dataset.xdel != null) return removeExtra(D.today(), Number(t.dataset.xdel));
   if (t.dataset.set) { S.db.settings[t.dataset.set] = !S.db.settings[t.dataset.set]; save(); renderAll(); return; }
   if (t.id === 'copy-day') return copyText(document.getElementById('log-day').value, 'Copied — ready to paste');
-  if (t.id === 'send-day') return sendToSchedule();
+  if (t.id === 'send-day') return sendDayLog();
   if (t.id === 'tok-save') {
     const v = (document.getElementById('tok').value || '').trim();
     if (!v || /^•+$/.test(v)) return toast('Paste a token first');
@@ -717,8 +803,8 @@ document.addEventListener('click', e => {
     S.dirty = true; renderAll(); pull();
     return;
   }
-  if (t.id === 'tok-clear') { localStorage.removeItem(LS_TOKEN); S.dirty = false; syncState('local', 'Not connected — this device only'); renderAll(); return; }
-  if (t.id === 'sync-now') { S.dirty = S.dirty || true; return pull(); }
+  if (t.id === 'tok-clear') { localStorage.removeItem(LS_TOKEN); S.dirty = false; setSync('local', 'Not connected — this device only'); renderAll(); return; }
+  if (t.id === 'sync-now') { S.dirty = true; return pull(); }
   if (t.id === 'backup') return copyText(JSON.stringify(S.db), 'Backup copied');
   if (t.id === 'restore') {
     const raw = prompt('Paste the backup JSON:');
@@ -731,24 +817,28 @@ document.addEventListener('click', e => {
 });
 
 document.getElementById('x-text').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('x-add').click(); });
+window.addEventListener('online', () => { flushOutbox(); if (token()) pull(); });
 
 /* ---------- boot ---------- */
 (function boot() {
-  S.plan = loadPlanCache() || FALLBACK_PLAN;
+  const cached = loadPlanCache();
+  adoptPlan(cached || FALLBACK_PLAN);
   S.db = loadDB();
-  closeStaleRuns();
+  S.ritualId = (todayRituals()[0] || (S.plan.rituals || [])[0] || {}).id || null;
   renderAll();
   tab('today');
   refreshPlan();
-  if (token()) pull(); else syncState('local', 'Not connected — this device only');
+  flushOutbox();
+  if (token()) pull(); else setSync('local', 'Not connected — this device only');
   S.tick = setInterval(() => {
     document.getElementById('clock').textContent = D.hhmm(Date.now());
-    const run = getRun(S.ritual, false);
-    if (run && activeStepId(run)) renderRitual();
+    const r = S.byId[S.ritualId];
+    if (r && activeStepId(getRunFor(r, false) || { steps: {} })) renderRitual();
+    if (S.db.outbox.length) flushOutbox();
     if (S.dirty && !S.pushing && token()) push();
   }, 30000);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { if (S.dirty && token()) push(); return; }
-    closeStaleRuns(); renderAll(); pull();
+    flushOutbox(); renderAll(); if (token()) pull();
   });
 })();

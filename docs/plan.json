@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-02T21:38:48-06:00",
+  "updated": "2026-10-02T21:50:31-06:00",
   "source": {
     "week_file": "/home/ro/.hermes/state/schedule/weeks/2026-W40.md",
     "life_file": "/home/ro/.hermes/state/life/weeks/2026-W40.md"
@@ -11,224 +11,1410 @@
     "end": "2026-10-04",
     "reserve_saturday": false
   },
-  "rituals": {
-    "day": {
-      "title": "Day",
-      "order_mode": "sequential",
+  "rituals": [
+    {
+      "id": "mon-read",
+      "day": "mon",
+      "title": "Mon Read (+ coffee at the end)",
+      "order": 1,
+      "start": "06:30",
+      "end": "07:20",
+      "minutes": 50,
       "steps": [
         {
-          "id": "read",
-          "title": "Read (+ coffee at the end)",
-          "start": "06:30",
-          "end": "07:20",
-          "minutes": 50
-        },
-        {
-          "id": "cleaning",
-          "title": "Cleaning",
-          "start": "07:20",
-          "end": "08:30",
-          "minutes": 70
-        },
-        {
-          "id": "exercise-meditation",
-          "title": "Exercise + meditation",
-          "start": "08:30",
-          "end": "09:30",
-          "minutes": 60
-        },
-        {
-          "id": "breakfast",
-          "title": "Breakfast (cook + eat)",
-          "start": "09:30",
-          "end": "10:10",
-          "minutes": 40
-        },
-        {
-          "id": "shower-grooming",
-          "title": "Shower + grooming",
-          "start": "10:10",
-          "end": "10:30",
-          "minutes": 20
-        },
-        {
-          "id": "work-a",
-          "title": "Work A",
-          "start": "10:30",
-          "end": "13:30",
-          "minutes": 180,
-          "kind": "work"
-        },
-        {
-          "id": "cook-dinner",
-          "title": "Cook + dinner (+ dishes)",
-          "start": "13:30",
-          "end": "15:30",
-          "minutes": 120
-        },
-        {
-          "id": "work-b",
-          "title": "Work B",
-          "start": "15:30",
-          "end": "19:00",
-          "minutes": 210,
-          "kind": "work"
-        },
-        {
-          "id": "journaling",
-          "title": "Journaling",
-          "start": "19:00",
-          "end": "19:30",
-          "minutes": 30
-        },
-        {
-          "id": "rest",
-          "title": "Rest (games, Netflix, reading)",
-          "start": "19:30",
-          "end": "21:30",
-          "minutes": 120
-        },
-        {
-          "id": "lights-out",
-          "title": "Lights out",
-          "start": "21:30",
-          "end": null,
-          "minutes": null
+          "id": "main",
+          "title": "Mon Read (+ coffee at the end)"
         }
       ]
     },
-    "week": {
-      "title": "Week",
-      "order_mode": "free",
+    {
+      "id": "mon-cleaning",
+      "day": "mon",
+      "title": "Mon Cleaning",
+      "order": 2,
+      "start": "07:20",
+      "end": "08:30",
+      "minutes": 70,
       "steps": [
         {
-          "id": "sweep-vacuum-1-3",
-          "title": "Sweep + vacuum (1/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Cleaning"
+        }
+      ]
+    },
+    {
+      "id": "mon-exercise-meditation",
+      "day": "mon",
+      "title": "Mon Exercise + meditation",
+      "order": 3,
+      "start": "08:30",
+      "end": "09:30",
+      "minutes": 60,
+      "steps": [
         {
-          "id": "sweep-vacuum-2-3",
-          "title": "Sweep + vacuum (2/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Exercise + meditation"
+        }
+      ]
+    },
+    {
+      "id": "mon-breakfast",
+      "day": "mon",
+      "title": "Mon Breakfast (cook + eat)",
+      "order": 4,
+      "start": "09:30",
+      "end": "10:10",
+      "minutes": 40,
+      "steps": [
         {
-          "id": "sweep-vacuum-3-3",
-          "title": "Sweep + vacuum (3/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Breakfast (cook + eat)"
+        }
+      ]
+    },
+    {
+      "id": "mon-shower-grooming",
+      "day": "mon",
+      "title": "Mon Shower + grooming",
+      "order": 5,
+      "start": "10:10",
+      "end": "10:30",
+      "minutes": 20,
+      "steps": [
         {
-          "id": "mop-floors",
-          "title": "Mop floors",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Shower + grooming"
+        }
+      ]
+    },
+    {
+      "id": "mon-work-a",
+      "day": "mon",
+      "title": "Mon Work A · iCare 1.1–1.2.1",
+      "order": 6,
+      "start": "10:30",
+      "end": "13:30",
+      "minutes": 180,
+      "steps": [
         {
-          "id": "change-bedsheets",
-          "title": "Change bedsheets",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Work A · iCare 1.1–1.2.1"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "mon-cook-dinner",
+      "day": "mon",
+      "title": "Mon Cook + dinner (+ dishes)",
+      "order": 7,
+      "start": "13:30",
+      "end": "15:30",
+      "minutes": 120,
+      "steps": [
         {
-          "id": "bathroom-toilet-sink-shower",
-          "title": "Bathroom — toilet, sink, shower",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Cook + dinner (+ dishes)"
+        }
+      ]
+    },
+    {
+      "id": "mon-work-b",
+      "day": "mon",
+      "title": "Mon Work B · Upwork — 2 items live",
+      "order": 8,
+      "start": "15:30",
+      "end": "19:00",
+      "minutes": 210,
+      "steps": [
         {
-          "id": "trash-out-1-3",
-          "title": "Trash out (1/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Work B · Upwork — 2 items live"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "mon-journaling",
+      "day": "mon",
+      "title": "Mon Journaling",
+      "order": 9,
+      "start": "19:00",
+      "end": "19:30",
+      "minutes": 30,
+      "steps": [
         {
-          "id": "trash-out-2-3",
-          "title": "Trash out (2/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Journaling"
+        }
+      ]
+    },
+    {
+      "id": "mon-rest",
+      "day": "mon",
+      "title": "Mon Rest (games, Netflix, reading)",
+      "order": 10,
+      "start": "19:30",
+      "end": "21:30",
+      "minutes": 120,
+      "steps": [
         {
-          "id": "trash-out-3-3",
-          "title": "Trash out (3/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Rest (games, Netflix, reading)"
+        }
+      ]
+    },
+    {
+      "id": "mon-lights-out",
+      "day": "mon",
+      "title": "Mon Lights out",
+      "order": 11,
+      "start": "21:30",
+      "end": null,
+      "minutes": null,
+      "steps": [
         {
-          "id": "shave-1-3",
-          "title": "Shave (1/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Mon Lights out"
+        }
+      ]
+    },
+    {
+      "id": "tue-read",
+      "day": "tue",
+      "title": "Tue Read (+ coffee at the end)",
+      "order": 1,
+      "start": "06:30",
+      "end": "07:20",
+      "minutes": 50,
+      "steps": [
         {
-          "id": "shave-2-3",
-          "title": "Shave (2/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Read (+ coffee at the end)"
+        }
+      ]
+    },
+    {
+      "id": "tue-cleaning",
+      "day": "tue",
+      "title": "Tue Cleaning",
+      "order": 2,
+      "start": "07:20",
+      "end": "08:30",
+      "minutes": 70,
+      "steps": [
         {
-          "id": "shave-3-3",
-          "title": "Shave (3/3)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Cleaning"
+        }
+      ]
+    },
+    {
+      "id": "tue-exercise-meditation",
+      "day": "tue",
+      "title": "Tue Exercise + meditation",
+      "order": 3,
+      "start": "08:30",
+      "end": "09:30",
+      "minutes": 60,
+      "steps": [
         {
-          "id": "hand-nails-1-1",
-          "title": "Hand nails (1/1)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Exercise + meditation"
+        }
+      ]
+    },
+    {
+      "id": "tue-breakfast",
+      "day": "tue",
+      "title": "Tue Breakfast (cook + eat)",
+      "order": 4,
+      "start": "09:30",
+      "end": "10:10",
+      "minutes": 40,
+      "steps": [
         {
-          "id": "exfoliate-1-1",
-          "title": "Exfoliate (1/1)",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Breakfast (cook + eat)"
+        }
+      ]
+    },
+    {
+      "id": "tue-shower-grooming",
+      "day": "tue",
+      "title": "Tue Shower + grooming",
+      "order": 5,
+      "start": "10:10",
+      "end": "10:30",
+      "minutes": 20,
+      "steps": [
         {
-          "id": "laundry-1-put-in",
-          "title": "Laundry 1 — put in",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Shower + grooming"
+        }
+      ]
+    },
+    {
+      "id": "tue-work-a",
+      "day": "tue",
+      "title": "Tue Work A · iCare 1.3–1.6",
+      "order": 6,
+      "start": "10:30",
+      "end": "13:30",
+      "minutes": 180,
+      "steps": [
         {
-          "id": "laundry-1-hang-out",
-          "title": "Laundry 1 — hang out",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Work A · iCare 1.3–1.6"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "tue-cook-dinner",
+      "day": "tue",
+      "title": "Tue Cook + dinner (+ dishes)",
+      "order": 7,
+      "start": "13:30",
+      "end": "15:30",
+      "minutes": 120,
+      "steps": [
         {
-          "id": "laundry-1-arrange",
-          "title": "Laundry 1 — arrange",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Cook + dinner (+ dishes)"
+        }
+      ]
+    },
+    {
+      "id": "tue-work-b",
+      "day": "tue",
+      "title": "Tue Work B · Mini Rituales 01+02 (legacy repo)",
+      "order": 8,
+      "start": "15:30",
+      "end": "19:00",
+      "minutes": 210,
+      "steps": [
         {
-          "id": "laundry-2-put-in",
-          "title": "Laundry 2 — put in",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Work B · Mini Rituales 01+02 (legacy repo)"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "tue-journaling",
+      "day": "tue",
+      "title": "Tue Journaling",
+      "order": 9,
+      "start": "19:00",
+      "end": "19:30",
+      "minutes": 30,
+      "steps": [
         {
-          "id": "laundry-2-hang-out",
-          "title": "Laundry 2 — hang out",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Journaling"
+        }
+      ]
+    },
+    {
+      "id": "tue-rest",
+      "day": "tue",
+      "title": "Tue Rest (games, Netflix, reading)",
+      "order": 10,
+      "start": "19:30",
+      "end": "21:30",
+      "minutes": 120,
+      "steps": [
         {
-          "id": "laundry-2-arrange",
-          "title": "Laundry 2 — arrange",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Rest (games, Netflix, reading)"
+        }
+      ]
+    },
+    {
+      "id": "tue-lights-out",
+      "day": "tue",
+      "title": "Tue Lights out",
+      "order": 11,
+      "start": "21:30",
+      "end": null,
+      "minutes": null,
+      "steps": [
         {
-          "id": "laundry-3-put-in",
-          "title": "Laundry 3 — put in",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Tue Lights out"
+        }
+      ]
+    },
+    {
+      "id": "wed-read",
+      "day": "wed",
+      "title": "Wed Read (+ coffee at the end)",
+      "order": 1,
+      "start": "06:30",
+      "end": "07:20",
+      "minutes": 50,
+      "steps": [
         {
-          "id": "laundry-3-hang-out",
-          "title": "Laundry 3 — hang out",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Wed Read (+ coffee at the end)"
+        }
+      ]
+    },
+    {
+      "id": "wed-cleaning",
+      "day": "wed",
+      "title": "Wed Cleaning",
+      "order": 2,
+      "start": "07:20",
+      "end": "08:30",
+      "minutes": 70,
+      "steps": [
         {
-          "id": "laundry-3-arrange",
-          "title": "Laundry 3 — arrange",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Wed Cleaning"
+        }
+      ]
+    },
+    {
+      "id": "wed-exercise-meditation",
+      "day": "wed",
+      "title": "Wed Exercise + meditation",
+      "order": 3,
+      "start": "08:30",
+      "end": "09:30",
+      "minutes": 60,
+      "steps": [
         {
-          "id": "full-litter-sand-change-due-this-week",
-          "title": "Full litter sand change  ⟵ due this week",
-          "optional": true
-        },
+          "id": "main",
+          "title": "Wed Exercise + meditation"
+        }
+      ]
+    },
+    {
+      "id": "wed-breakfast",
+      "day": "wed",
+      "title": "Wed Breakfast (cook + eat)",
+      "order": 4,
+      "start": "09:30",
+      "end": "10:10",
+      "minutes": 40,
+      "steps": [
         {
-          "id": "dusting-appliance-cleaning-ad-hoc-only-what-you-flag",
-          "title": "Dusting / appliance cleaning — ad hoc, only what you flag",
-          "optional": true
+          "id": "main",
+          "title": "Wed Breakfast (cook + eat)"
+        }
+      ]
+    },
+    {
+      "id": "wed-shower-grooming",
+      "day": "wed",
+      "title": "Wed Shower + grooming",
+      "order": 5,
+      "start": "10:10",
+      "end": "10:30",
+      "minutes": 20,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Shower + grooming"
+        }
+      ]
+    },
+    {
+      "id": "wed-work-a",
+      "day": "wed",
+      "title": "Wed Work A · iCare 1.7  (#55)",
+      "order": 6,
+      "start": "10:30",
+      "end": "13:30",
+      "minutes": 180,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Work A · iCare 1.7  (#55)"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "wed-cook-dinner",
+      "day": "wed",
+      "title": "Wed Cook + dinner (+ dishes)",
+      "order": 7,
+      "start": "13:30",
+      "end": "15:30",
+      "minutes": 120,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Cook + dinner (+ dishes)"
+        }
+      ]
+    },
+    {
+      "id": "wed-work-b",
+      "day": "wed",
+      "title": "Wed Work B · Iván 18:30",
+      "order": 8,
+      "start": "15:30",
+      "end": "19:00",
+      "minutes": 210,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Work B · Iván 18:30"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "wed-journaling",
+      "day": "wed",
+      "title": "Wed Journaling",
+      "order": 9,
+      "start": "19:00",
+      "end": "19:30",
+      "minutes": 30,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Journaling"
+        }
+      ]
+    },
+    {
+      "id": "wed-rest",
+      "day": "wed",
+      "title": "Wed Rest (games, Netflix, reading)",
+      "order": 10,
+      "start": "19:30",
+      "end": "21:30",
+      "minutes": 120,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Rest (games, Netflix, reading)"
+        }
+      ]
+    },
+    {
+      "id": "wed-lights-out",
+      "day": "wed",
+      "title": "Wed Lights out",
+      "order": 11,
+      "start": "21:30",
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Lights out"
+        }
+      ]
+    },
+    {
+      "id": "thu-read",
+      "day": "thu",
+      "title": "Thu Read (+ coffee at the end)",
+      "order": 1,
+      "start": "06:30",
+      "end": "07:20",
+      "minutes": 50,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Read (+ coffee at the end)"
+        }
+      ]
+    },
+    {
+      "id": "thu-cleaning",
+      "day": "thu",
+      "title": "Thu Cleaning",
+      "order": 2,
+      "start": "07:20",
+      "end": "08:30",
+      "minutes": 70,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Cleaning"
+        }
+      ]
+    },
+    {
+      "id": "thu-exercise-meditation",
+      "day": "thu",
+      "title": "Thu Exercise + meditation",
+      "order": 3,
+      "start": "08:30",
+      "end": "09:30",
+      "minutes": 60,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Exercise + meditation"
+        }
+      ]
+    },
+    {
+      "id": "thu-breakfast",
+      "day": "thu",
+      "title": "Thu Breakfast (cook + eat)",
+      "order": 4,
+      "start": "09:30",
+      "end": "10:10",
+      "minutes": 40,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Breakfast (cook + eat)"
+        }
+      ]
+    },
+    {
+      "id": "thu-shower-grooming",
+      "day": "thu",
+      "title": "Thu Shower + grooming",
+      "order": 5,
+      "start": "10:10",
+      "end": "10:30",
+      "minutes": 20,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Shower + grooming"
+        }
+      ]
+    },
+    {
+      "id": "thu-work-a",
+      "day": "thu",
+      "title": "Thu Work A · Mini Rituales — M1-01…M1-10, M1-12, M1-18",
+      "order": 6,
+      "start": "10:30",
+      "end": "13:30",
+      "minutes": 180,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Work A · Mini Rituales — M1-01…M1-10, M1-12, M1-18"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "thu-cook-dinner",
+      "day": "thu",
+      "title": "Thu Cook + dinner (+ dishes)",
+      "order": 7,
+      "start": "13:30",
+      "end": "15:30",
+      "minutes": 120,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Cook + dinner (+ dishes)"
+        }
+      ]
+    },
+    {
+      "id": "thu-work-b",
+      "day": "thu",
+      "title": "Thu Work B · Upwork",
+      "order": 8,
+      "start": "15:30",
+      "end": "19:00",
+      "minutes": 210,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Work B · Upwork"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "thu-journaling",
+      "day": "thu",
+      "title": "Thu Journaling",
+      "order": 9,
+      "start": "19:00",
+      "end": "19:30",
+      "minutes": 30,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Journaling"
+        }
+      ]
+    },
+    {
+      "id": "thu-rest",
+      "day": "thu",
+      "title": "Thu Rest (games, Netflix, reading)",
+      "order": 10,
+      "start": "19:30",
+      "end": "21:30",
+      "minutes": 120,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Rest (games, Netflix, reading)"
+        }
+      ]
+    },
+    {
+      "id": "thu-lights-out",
+      "day": "thu",
+      "title": "Thu Lights out",
+      "order": 11,
+      "start": "21:30",
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Lights out"
+        }
+      ]
+    },
+    {
+      "id": "fri-read",
+      "day": "fri",
+      "title": "Fri Read (+ coffee at the end)",
+      "order": 1,
+      "start": "06:30",
+      "end": "07:20",
+      "minutes": 50,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Read (+ coffee at the end)"
+        }
+      ]
+    },
+    {
+      "id": "fri-cleaning",
+      "day": "fri",
+      "title": "Fri Cleaning",
+      "order": 2,
+      "start": "07:20",
+      "end": "08:30",
+      "minutes": 70,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Cleaning"
+        }
+      ]
+    },
+    {
+      "id": "fri-exercise-meditation",
+      "day": "fri",
+      "title": "Fri Exercise + meditation",
+      "order": 3,
+      "start": "08:30",
+      "end": "09:30",
+      "minutes": 60,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Exercise + meditation"
+        }
+      ]
+    },
+    {
+      "id": "fri-breakfast",
+      "day": "fri",
+      "title": "Fri Breakfast (cook + eat)",
+      "order": 4,
+      "start": "09:30",
+      "end": "10:10",
+      "minutes": 40,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Breakfast (cook + eat)"
+        }
+      ]
+    },
+    {
+      "id": "fri-shower-grooming",
+      "day": "fri",
+      "title": "Fri Shower + grooming",
+      "order": 5,
+      "start": "10:10",
+      "end": "10:30",
+      "minutes": 20,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Shower + grooming"
+        }
+      ]
+    },
+    {
+      "id": "fri-work-a",
+      "day": "fri",
+      "title": "Fri Work A · iCare — merge #56, then 1.11",
+      "order": 6,
+      "start": "10:30",
+      "end": "13:30",
+      "minutes": 180,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Work A · iCare — merge #56, then 1.11"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "fri-cook-dinner",
+      "day": "fri",
+      "title": "Fri Cook + dinner (+ dishes)",
+      "order": 7,
+      "start": "13:30",
+      "end": "15:30",
+      "minutes": 120,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Cook + dinner (+ dishes)"
+        }
+      ]
+    },
+    {
+      "id": "fri-work-b",
+      "day": "fri",
+      "title": "Fri Work B · Mini Rituales — M1-11 + M1-13",
+      "order": 8,
+      "start": "15:30",
+      "end": "19:00",
+      "minutes": 210,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Work B · Mini Rituales — M1-11 + M1-13"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "fri-journaling",
+      "day": "fri",
+      "title": "Fri Journaling",
+      "order": 9,
+      "start": "19:00",
+      "end": "19:30",
+      "minutes": 30,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Journaling"
+        }
+      ]
+    },
+    {
+      "id": "fri-rest",
+      "day": "fri",
+      "title": "Fri Rest (games, Netflix, reading)",
+      "order": 10,
+      "start": "19:30",
+      "end": "21:30",
+      "minutes": 120,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Rest (games, Netflix, reading)"
+        }
+      ]
+    },
+    {
+      "id": "fri-lights-out",
+      "day": "fri",
+      "title": "Fri Lights out",
+      "order": 11,
+      "start": "21:30",
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Lights out"
+        }
+      ]
+    },
+    {
+      "id": "sat-read",
+      "day": "sat",
+      "title": "Sat Read (+ coffee at the end)",
+      "order": 1,
+      "start": "06:30",
+      "end": "07:20",
+      "minutes": 50,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Read (+ coffee at the end)"
+        }
+      ]
+    },
+    {
+      "id": "sat-cleaning",
+      "day": "sat",
+      "title": "Sat Cleaning",
+      "order": 2,
+      "start": "07:20",
+      "end": "08:30",
+      "minutes": 70,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Cleaning"
+        }
+      ]
+    },
+    {
+      "id": "sat-exercise-meditation",
+      "day": "sat",
+      "title": "Sat Exercise + meditation",
+      "order": 3,
+      "start": "08:30",
+      "end": "09:30",
+      "minutes": 60,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Exercise + meditation"
+        }
+      ]
+    },
+    {
+      "id": "sat-breakfast",
+      "day": "sat",
+      "title": "Sat Breakfast (cook + eat)",
+      "order": 4,
+      "start": "09:30",
+      "end": "10:10",
+      "minutes": 40,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Breakfast (cook + eat)"
+        }
+      ]
+    },
+    {
+      "id": "sat-shower-grooming",
+      "day": "sat",
+      "title": "Sat Shower + grooming",
+      "order": 5,
+      "start": "10:10",
+      "end": "10:30",
+      "minutes": 20,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Shower + grooming"
+        }
+      ]
+    },
+    {
+      "id": "sat-work-a",
+      "day": "sat",
+      "title": "Sat Work A",
+      "order": 6,
+      "start": "10:30",
+      "end": "13:30",
+      "minutes": 180,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Work A"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "sat-cook-dinner",
+      "day": "sat",
+      "title": "Sat Cook + dinner (+ dishes)",
+      "order": 7,
+      "start": "13:30",
+      "end": "15:30",
+      "minutes": 120,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Cook + dinner (+ dishes)"
+        }
+      ]
+    },
+    {
+      "id": "sat-work-b",
+      "day": "sat",
+      "title": "Sat Work B",
+      "order": 8,
+      "start": "15:30",
+      "end": "19:00",
+      "minutes": 210,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Work B"
+        }
+      ],
+      "kind": "work"
+    },
+    {
+      "id": "sat-journaling",
+      "day": "sat",
+      "title": "Sat Journaling",
+      "order": 9,
+      "start": "19:00",
+      "end": "19:30",
+      "minutes": 30,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Journaling"
+        }
+      ]
+    },
+    {
+      "id": "sat-rest",
+      "day": "sat",
+      "title": "Sat Rest (games, Netflix, reading)",
+      "order": 10,
+      "start": "19:30",
+      "end": "21:30",
+      "minutes": 120,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Rest (games, Netflix, reading)"
+        }
+      ]
+    },
+    {
+      "id": "sat-lights-out",
+      "day": "sat",
+      "title": "Sat Lights out",
+      "order": 11,
+      "start": "21:30",
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sat Lights out"
+        }
+      ]
+    },
+    {
+      "id": "weekly-sweep-vacuum-1-3",
+      "day": null,
+      "title": "Sweep + vacuum (1/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sweep + vacuum (1/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-sweep-vacuum-2-3",
+      "day": null,
+      "title": "Sweep + vacuum (2/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sweep + vacuum (2/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-sweep-vacuum-3-3",
+      "day": null,
+      "title": "Sweep + vacuum (3/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Sweep + vacuum (3/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-mop-floors",
+      "day": null,
+      "title": "Mop floors",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Mop floors"
+        }
+      ]
+    },
+    {
+      "id": "weekly-change-bedsheets",
+      "day": null,
+      "title": "Change bedsheets",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Change bedsheets"
+        }
+      ]
+    },
+    {
+      "id": "weekly-bathroom-toilet-sink-shower",
+      "day": null,
+      "title": "Bathroom — toilet, sink, shower",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Bathroom — toilet, sink, shower"
+        }
+      ]
+    },
+    {
+      "id": "weekly-trash-out-1-3",
+      "day": null,
+      "title": "Trash out (1/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Trash out (1/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-trash-out-2-3",
+      "day": null,
+      "title": "Trash out (2/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Trash out (2/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-trash-out-3-3",
+      "day": null,
+      "title": "Trash out (3/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Trash out (3/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-shave-1-3",
+      "day": null,
+      "title": "Shave (1/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Shave (1/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-shave-2-3",
+      "day": null,
+      "title": "Shave (2/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Shave (2/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-shave-3-3",
+      "day": null,
+      "title": "Shave (3/3)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Shave (3/3)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-hand-nails-1-1",
+      "day": null,
+      "title": "Hand nails (1/1)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Hand nails (1/1)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-exfoliate-1-1",
+      "day": null,
+      "title": "Exfoliate (1/1)",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Exfoliate (1/1)"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-1-put-in",
+      "day": null,
+      "title": "Laundry 1 — put in",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 1 — put in"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-1-hang-out",
+      "day": null,
+      "title": "Laundry 1 — hang out",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 1 — hang out"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-1-arrange",
+      "day": null,
+      "title": "Laundry 1 — arrange",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 1 — arrange"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-2-put-in",
+      "day": null,
+      "title": "Laundry 2 — put in",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 2 — put in"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-2-hang-out",
+      "day": null,
+      "title": "Laundry 2 — hang out",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 2 — hang out"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-2-arrange",
+      "day": null,
+      "title": "Laundry 2 — arrange",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 2 — arrange"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-3-put-in",
+      "day": null,
+      "title": "Laundry 3 — put in",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 3 — put in"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-3-hang-out",
+      "day": null,
+      "title": "Laundry 3 — hang out",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 3 — hang out"
+        }
+      ]
+    },
+    {
+      "id": "weekly-laundry-3-arrange",
+      "day": null,
+      "title": "Laundry 3 — arrange",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Laundry 3 — arrange"
+        }
+      ]
+    },
+    {
+      "id": "weekly-full-litter-sand-change-due-this-week",
+      "day": null,
+      "title": "Full litter sand change  ⟵ due this week",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Full litter sand change  ⟵ due this week"
+        }
+      ]
+    },
+    {
+      "id": "weekly-dusting-appliance-cleaning-ad-hoc-only-what-you-flag",
+      "day": null,
+      "title": "Dusting / appliance cleaning — ad hoc, only what you flag",
+      "order": 0,
+      "optional": true,
+      "minutes": null,
+      "start": null,
+      "end": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Dusting / appliance cleaning — ad hoc, only what you flag"
         }
       ]
     }
-  },
+  ],
   "days": {
     "2026-09-28": {
       "work_a": "iCare 1.1–1.2.1",

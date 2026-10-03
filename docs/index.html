@@ -14,6 +14,7 @@
   <div class="wrap">
     <div class="row1">
       <span class="brand">Ritual Log</span>
+      <span id="queue-chip" class="badge a" hidden>0 to send</span>
       <span id="sync-chip" class="badge n">this device</span>
       <span id="clock" class="tnum">--:--</span>
     </div>
@@ -21,6 +22,7 @@
     <div id="datesub" class="micro muted"></div>
     <nav class="tabs" id="tabs" role="tablist">
       <button data-tab="today" aria-selected="true">Today</button>
+      <button data-tab="week" aria-selected="false">Week</button>
       <button data-tab="ritual" aria-selected="false">Ritual</button>
       <button data-tab="summary" aria-selected="false">Summary</button>
     </nav>
@@ -30,14 +32,37 @@
 <main class="wrap">
   <section id="view-today">
     <div id="today-banner"></div>
-    <div id="ritual-cards"></div>
+    <div class="card">
+      <div class="card-head" id="today-head"></div>
+      <div id="today-list" class="rituals"></div>
+      <div class="micro muted" style="margin-top:12px">Each line is its own ritual, with its own run. Open one to start, complete or skip it — the channel hears about every finish.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="k">Something else you did</span><span class="spacer"></span>
+        <span class="micro muted">kept in the day's log</span></div>
+      <div id="extras"></div>
+      <div class="row">
+        <input type="text" id="x-text" placeholder="e.g. laundry, shopping, a call…">
+        <input type="number" id="x-min" class="fixed" style="max-width:84px" placeholder="min" min="1">
+        <button class="b sm fixed" id="x-add">Add</button>
+      </div>
+    </div>
     <div class="card">
       <div class="card-head"><span class="k">Week goals</span></div>
       <div id="goals"></div>
     </div>
   </section>
 
+  <section id="view-week" hidden>
+    <div class="card">
+      <div class="card-head" id="week-head"></div>
+      <div id="week-list"></div>
+      <div class="micro muted" style="margin-top:12px">Everything the week holds, day by day. A ritual belongs to one day; open any of them to see its run.</div>
+    </div>
+  </section>
+
   <section id="view-ritual" hidden>
+    <div class="row" id="rv-nav" style="margin-bottom:12px"></div>
     <div class="card">
       <div class="card-head">
         <span class="k" id="rv-kicker">Ritual</span>
@@ -49,7 +74,6 @@
         <span id="rv-pct" class="badge n">0%</span>
       </div>
       <div id="rv-sub" class="caption muted" style="margin-top:6px"></div>
-      <div class="row" id="rv-switch"></div>
     </div>
     <div class="card">
       <ul class="steps" id="steps"></ul>
@@ -57,36 +81,23 @@
       <div class="micro muted" style="margin-top:12px">Slide the control to commit a step — or press <b>Complete</b>, which does the same with no gesture. <b>Start</b> only runs the timer; nothing completes on its own.</div>
     </div>
     <div class="card">
-      <div class="card-head"><span class="k">Something else you did</span><span class="spacer"></span>
-        <span class="micro muted">kept in the log</span></div>
-      <div id="extras"></div>
-      <div class="row">
-        <input type="text" id="x-text" placeholder="e.g. laundry, shopping, a call…">
-        <input type="number" id="x-min" class="fixed" style="max-width:84px" placeholder="min" min="1">
-        <button class="b sm fixed" id="x-add">Add</button>
-      </div>
-    </div>
-    <div class="card" id="rv-tools">
       <div class="card-head"><span class="k">Run</span></div>
-      <div class="row">
-        <button class="b sm" id="rv-finish">Close the run</button>
-        <button class="b sm ghost" id="rv-abandon">Abandon</button>
-      </div>
-      <div class="micro muted" style="margin-top:10px">One active run per ritual. Closing or abandoning ends today's run; history is never overwritten.</div>
+      <div id="rv-tools" class="row"></div>
+      <div class="micro muted" style="margin-top:10px">One active run per ritual. Closing or abandoning ends it; history is never overwritten.</div>
     </div>
   </section>
 
   <section id="view-summary" hidden>
     <div class="card">
-      <div class="card-head"><span class="k">Run summary</span><span class="spacer"></span><span id="sum-state" class="badge n"></span></div>
+      <div class="card-head"><span class="k">Summary</span></div>
       <div id="summary"></div>
     </div>
     <div class="card">
-      <div class="card-head"><span class="k">Share</span></div>
+      <div class="card-head"><span class="k">The day's log</span></div>
       <textarea class="log" id="log-day" spellcheck="false"></textarea>
       <div class="row">
         <button class="b primary" id="copy-day">Copy</button>
-        <button class="b" id="send-day" hidden>Send to #schedule</button>
+        <button class="b" id="send-day" hidden>Send the whole day</button>
       </div>
       <div class="micro muted" style="margin-top:10px" id="send-note"></div>
     </div>

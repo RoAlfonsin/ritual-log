@@ -33,6 +33,8 @@ ROWS = {
     "Lights out": ("lights-out", "Lights out", None),
 }
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+DAY_CODES = ["mon", "tue", "wed", "thu", "fri", "sat"]
+DAY_LABEL = {"mon": "Mon", "tue": "Tue", "wed": "Wed", "thu": "Thu", "fri": "Fri", "sat": "Sat"}
 MONTHS = {m: i + 1 for i, m in enumerate(
     ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"])}
 
@@ -198,6 +200,34 @@ def parse_week(path: Path):
             "reserve_saturday": "Reserve Saturday: on" in text}, days, goals, anchors
 
 
+def build_rituals(composer: Path, days: dict, monday: dt.date, week_items: list):
+    """One fund of mini rituals, one per day-of-week instance — Mon Read, Fri Read…
+    The week view is the whole fund; a day view is the slice that belongs to that
+    weekday. Work rituals take that day's day-map item as their title."""
+    skel = skeleton(composer)
+    out = []
+    for i, code in enumerate(DAY_CODES):                 # Mon–Sat; Sunday is free
+        date = (monday + dt.timedelta(days=i)).isoformat()
+        day = days.get(date, {}) or {}
+        for order, s in enumerate(skel, 1):
+            title = f"{DAY_LABEL[code]} {s['title']}"
+            if s["id"] == "work-a" and day.get("work_a"):
+                title = f"{DAY_LABEL[code]} Work A · {day['work_a']}"
+            elif s["id"] == "work-b" and day.get("work_b"):
+                title = f"{DAY_LABEL[code]} Work B · {day['work_b']}"
+            r = {"id": f"{code}-{s['id']}", "day": code, "title": title, "order": order,
+                 "start": s["start"], "end": s["end"], "minutes": s["minutes"],
+                 "steps": [{"id": "main", "title": title}]}
+            if s.get("kind"):
+                r["kind"] = s["kind"]
+            out.append(r)
+    for it in week_items:                                # no day: once this week, any day
+        out.append({"id": "weekly-" + it["id"], "day": None, "title": it["title"], "order": 0,
+                    "optional": True, "minutes": None, "start": None, "end": None,
+                    "steps": [{"id": "main", "title": it["title"]}]})
+    return out
+
+
 def main():
     week_no = None
     if len(sys.argv) > 1:
@@ -215,24 +245,29 @@ def main():
     life_file = STATE / f"life/weeks/{wk}.md"
 
     wk_meta, days, goals, anchors = parse_week(week_file)
+    monday = dt.date.fromisoformat(wk_meta["start"])
+    week_items = life_items(life_file)
+    rituals = build_rituals(STATE / "schedule/COMPOSER.md", days, monday, week_items)
     plan = {
         "updated": dt.datetime.now().astimezone().replace(microsecond=0).isoformat(),
         "source": {"week_file": str(week_file), "life_file": str(life_file) if life_file.exists() else None},
         "week": wk_meta,
-        "rituals": {
-            "day": {"title": "Day", "order_mode": "sequential", "steps": skeleton(STATE / "schedule/COMPOSER.md")},
-            "week": {"title": "Week", "order_mode": "free", "steps": life_items(life_file)},
-        },
+        "rituals": rituals,
         "days": days,
         "goals": goals,
         "anchors": anchors,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(plan, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    per_day = {}
+    for r in rituals:
+        if r["day"]:
+            per_day[r["day"]] = per_day.get(r["day"], 0) + 1
     print(f"plan.json → {OUT}")
-    print(f"  {plan['week']['iso']} · day {len(plan['rituals']['day']['steps'])} pasos · "
-          f"semana {len(plan['rituals']['week']['steps'])} pasos · {len(goals)} objetivos · "
-          f"días con trabajo: {sum(1 for d in days.values() if d['work_a'] or d['work_b'])}")
+    print(f"  {plan['week']['iso']} · {len(rituals)} mini rituals "
+          f"({per_day.get('mon', 0)} per weekday × {len(DAY_CODES)} days + "
+          f"{sum(1 for r in rituals if not r['day'])} any-day) · "
+          f"{len(goals)} goals · days with work: {sum(1 for d in days.values() if d['work_a'] or d['work_b'])}")
 
 
 if __name__ == "__main__":
