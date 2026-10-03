@@ -81,6 +81,25 @@ tools/build_plan.py  regenerates docs/plan.json from Hermes' state files
 `docs/config.js` (the `#schedule` webhook) is generated in CI from the repo
 secret `SCHEDULE_WEBHOOK` and is gitignored — never commit it.
 
+## On your phone — it installs as an app
+
+Open <https://roalfonsin.github.io/ritual-log/> and tap **Install** in the header
+(it appears once the browser is satisfied the app is installable):
+
+- **Android / Chrome**: Install → *Install*. It lands on the home screen with its own
+  icon, opens full-screen with no address bar, and shows in the app switcher.
+- **iPhone / Safari**: there is no install event to catch — *Share → Add to Home
+  Screen*. The Install chip says so if you tap it.
+
+What makes it installable: `manifest.json` (standalone display, scope, 192/512 icons
+plus a maskable one), `apple-touch-icon.png` for iOS, and `sw.js`, a service worker.
+
+The service worker is **network-first**: online it always fetches fresh and updates
+its cache, so a deploy is picked up on the next load; offline it serves the last copy,
+so the list still opens in a dead spot. Nothing cross-origin is ever cached — the
+gist and the webhook must always hit the network — and `config.js` (the webhook) is
+never cached at all. An update is just a deploy: the next load online picks it up.
+
 ## Where the data lives
 
 The device store is `localStorage` (`ritual-log.v3`): instant, offline, and the
@@ -120,7 +139,10 @@ python3 tools/build_plan.py 41       # a specific week
 
 It reads, read-only:
 
-- `~/.hermes/state/schedule/COMPOSER.md` → the day skeleton (the locked times)
+- `~/.hermes/scripts/day_plan.py` → `day_rows()`, the day's shape: which blocks exist,
+  their spans, and the chores and menus inside them. This is the **same function that
+  prints the plan posted to #schedule** at 06:15, so the app and the posted plan can
+  never disagree. It is imported, never re-typed.
 - `~/.hermes/state/schedule/weeks/YYYY-Www.md` → the week's goals, day map, anchors
 - `~/.hermes/state/life/weeks/YYYY-Www.md` → the "Once this week" items
 
