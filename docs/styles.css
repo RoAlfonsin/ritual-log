@@ -92,6 +92,8 @@ button.b.block { width: 100%; }
 .badge.a { background: var(--accent-tint); color: var(--accent); }
 .badge.n { background: var(--surface-2); color: var(--muted); }
 .badge.warn { background: var(--accent-tint); color: var(--accent); }
+.badge.live { animation: pulse 1.6s var(--ease) infinite; }
+#newver { border: 0; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: auto; }
 
 /* the day's and the week's rituals — one compact line each */
 .rituals { display: flex; flex-direction: column; }

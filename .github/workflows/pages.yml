@@ -26,6 +26,14 @@ jobs:
           SCHEDULE_WEBHOOK: ${{ secrets.SCHEDULE_WEBHOOK }}
         run: |
           printf 'window.__WEBHOOK__ = "%s";\n' "$SCHEDULE_WEBHOOK" > docs/config.js
+      # The build id goes into the app itself and into version.json, so an open tab
+      # can tell it is running yesterday's code — a stale tab was silently logging
+      # with the old model and old line format.
+      - name: Stamp the build
+        run: |
+          SHA="${GITHUB_SHA:0:7}"
+          sed -i "s/__BUILD__/${SHA}/" docs/app.js
+          printf '{"build":"%s","at":"%s"}\n' "$SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > docs/version.json
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

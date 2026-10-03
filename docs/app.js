@@ -26,6 +26,9 @@ const GIST_FILE = 'ritual-log.json';
 const LS_DB = 'ritual-log.v3';
 const LS_PLAN = 'ritual-log.plan.v3';
 const LS_TOKEN = 'ritual-log.token';
+/* Replaced with the commit sha at build time; `version.json` carries the same value,
+   so an open tab can tell that it is running an older build and say so. */
+const BUILD = '__BUILD__';
 
 const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const DAY_LABEL = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' };
@@ -212,6 +215,12 @@ function dur(min) {
 /* live elapsed under a minute reads in seconds — a run in progress should never
    look like it has done nothing */
 function durLive(sec) { return sec < 60 ? Math.round(sec) + 's' : dur(sec / 60); }
+/* a running timer reads as a clock (1:07) so it visibly moves every second */
+function timerText(sec) {
+  const s = Math.floor(sec);
+  if (s < 3600) return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  return dur(s / 60);
+}
 function planMinutes(ritual) {
   if (ritual.minutes != null) return ritual.minutes;
   if (ritual.start && ritual.end) {
@@ -440,7 +449,7 @@ function statusBadge(ritual, state) {
   if (state === 'completed') return '<span class="badge ok">done</span>';
   if (state === 'skipped') return '<span class="badge n">skipped</span>';
   const run = getRunFor(ritual, false);
-  if (state === 'active' && run) return '<span class="badge a tnum">' + durLive(stepElapsed(run, activeStepId(run))) + '</span>';
+  if (state === 'active' && run) return '<span class="badge a live tnum">' + timerText(stepElapsed(run, activeStepId(run))) + '</span>';
   const plan = planMinutes(ritual);
   if (!plan) return '';                       /* a chore inside a block has no plan of its own */
   return '<span class="badge n tnum">' + dur(plan) + '</span>';
@@ -570,18 +579,18 @@ function stepRow(ritual, run, st, i) {
   let head = '';
   if (status === 'completed') head = '<span class="badge ok">done</span>';
   else if (status === 'skipped') head = '<span class="badge n">skipped</span>';
-  else if (status === 'active') head = '<span class="badge ' + (over ? 'warn' : 'a') + ' tnum">' + durLive(el) + '</span>';
+  else if (status === 'active') head = '<span class="badge ' + (over ? 'warn' : 'a') + ' live tnum">' + timerText(el) + '</span>';
   else head = '<span class="badge n tnum">' + (plan ? dur(plan) : '—') + '</span>';
 
   const sub = [actual, st.optional ? 'optional' : null].filter(Boolean).join(' · ');
   const prog = status === 'active'
     ? '<div class="prog"><span class="bar"><i style="width:' + Math.min(100, plan ? (el / 60 / plan) * 100 : 0) + '%"></i></span>' +
-      '<span class="micro muted tnum">' + durLive(el) + (plan ? ' / ' + dur(plan) : '') + '</span></div>'
+      '<span class="micro muted tnum">' + timerText(el) + (plan ? ' / ' + dur(plan) : '') + '</span></div>'
     : '';
 
   const acts = [];
-  if (status === 'pending') acts.push('<button class="b sm" data-start="' + st.id + '">Start</button>');
-  if (status === 'active') acts.push('<button class="b sm" data-pause="' + st.id + '">Pause</button>');
+  if (status === 'pending') acts.push('<button class="b sm" data-start="' + st.id + '">Start timer</button>');
+  if (status === 'active') acts.push('<button class="b sm" data-pause="' + st.id + '">Pause timer</button>');
   acts.push('<button class="b sm ghost" data-skip="' + st.id + '">' + (status === 'completed' || status === 'skipped' ? 'Reopen' : 'Skip') + '</button>');
 
   const slide = (status === 'completed' || status === 'skipped') ? '' :
@@ -681,7 +690,7 @@ function renderSummary() {
 
   document.getElementById('state-info').textContent =
     'Plan ' + (S.plan.updated || '—') + ' · saved ' + (S.db.updated ? new Date(S.db.updated).toLocaleString('en-GB') : '—') +
-    ' · ' + Object.keys(S.db.runs).length + ' runs · ' + (S.plan.rituals || []).length + ' rituals';
+    ' · ' + Object.keys(S.db.runs).length + ' runs · ' + (S.plan.rituals || []).length + ' rituals · build ' + BUILD;
 }
 
 const SYNC_LABEL = { local: 'this device', pending: 'saving', syncing: 'syncing', synced: 'synced', failed: 'not saved' };
@@ -816,10 +825,49 @@ document.addEventListener('click', e => {
     return;
   }
   if (t.id === 'wipe') { if (confirm('Erase every run stored on this device?')) { localStorage.removeItem(LS_DB); S.db = loadDB(); renderAll(); toast('Device data erased'); } return; }
+  if (t.id === 'newver') { location.href = location.pathname + '?b=' + Date.now(); return; }
 });
 
 document.getElementById('x-text').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('x-add').click(); });
 window.addEventListener('online', () => { flushOutbox(); if (token()) pull(); });
+
+/* ---------- a running timer has to look like one ---------- */
+/* Repaint only the live numbers once a second. Re-rendering the whole view on every
+   tick would fight the drag gesture; leaving it to the 30 s pass is what made a
+   started ritual sit on 0:00 and look broken. */
+function paintLiveTimer() {
+  const rid = activeAnywhere(); if (!rid) return;
+  const ritual = S.byId[rid]; if (!ritual) return;
+  const run = getRunFor(ritual, false); if (!run) return;
+  const id = activeStepId(run); if (!id) return;
+  const txt = timerText(stepElapsed(run, id));
+  document.querySelectorAll('[data-open-ritual="' + rid + '"] .badge.live').forEach(b => { b.textContent = txt; });
+  const li = document.querySelector('li.step[data-step="' + id + '"]');
+  if (li) {
+    const b = li.querySelector('.state .badge');
+    if (b && b.classList.contains('live')) b.textContent = txt;
+    const m = li.querySelector('.prog .micro');
+    if (m) m.textContent = txt + (planMinutes(ritual) ? ' / ' + dur(planMinutes(ritual)) : '');
+  }
+}
+
+/* ---------- stale tabs ---------- */
+/* A tab loaded before a deploy keeps running yesterday's code — that is how a log
+   line came through without its window. version.json is stamped per deploy, so the
+   tab can notice and offer a reload instead of quietly misbehaving. */
+let lastVerCheck = 0;
+async function checkVersion(force) {
+  const now = Date.now();
+  if (!force && now - lastVerCheck < 60000) return;
+  lastVerCheck = now;
+  try {
+    const r = await fetch('version.json?t=' + now, { cache: 'no-store' });
+    if (!r.ok) return;
+    const v = await r.json();
+    const chip = document.getElementById('newver');
+    if (v && v.build && BUILD !== '__BUILD__' && v.build !== BUILD) chip.hidden = false;
+  } catch (e) { /* local dev has no version.json */ }
+}
 
 /* ---------- boot ---------- */
 (function boot() {
@@ -839,8 +887,10 @@ window.addEventListener('online', () => { flushOutbox(); if (token()) pull(); })
     if (S.db.outbox.length) flushOutbox();
     if (S.dirty && !S.pushing && token()) push();
   }, 30000);
+  S.timerTick = setInterval(paintLiveTimer, 1000);
+  checkVersion(true);
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { if (S.dirty && token()) push(); return; }
-    flushOutbox(); renderAll(); if (token()) pull();
+    flushOutbox(); renderAll(); if (token()) pull(); checkVersion();
   });
 })();
