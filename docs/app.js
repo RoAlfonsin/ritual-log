@@ -624,7 +624,7 @@ function renderSync() {
   el.innerHTML =
     '<div class="card-head"><span class="k">Shared log</span><span class="spacer"></span><span class="badge ' + cls + '">' + esc(chip.textContent) + '</span></div>' +
     '<div class="small muted" style="margin-bottom:10px">' + esc(S.syncMsg || (tok ? 'Connected.' : 'Not connected — runs stay on this device.')) + '</div>' +
-    '<div class="row"><input type="text" id="tok" placeholder="GitHub token with gist access" value="' + (tok ? '••••••••••••••••' : '') + '"></div>' +
+    '<div class="row"><input type="password" id="tok" autocomplete="off" placeholder="GitHub token with gist access" value="' + (tok ? '••••••••••••••••' : '') + '"></div>' +
     '<div class="row">' +
       '<button class="b sm primary" id="tok-save">' + (tok ? 'Replace token' : 'Connect') + '</button>' +
       '<button class="b sm" id="sync-now">Sync now</button>' +
