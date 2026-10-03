@@ -7,6 +7,12 @@
 <meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
 <title>Ritual Log</title>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ritual Log">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,6 +20,8 @@
   <div class="wrap">
     <div class="row1">
       <span class="brand">Ritual Log</span>
+      <button id="install" class="badge a" hidden>Install</button>
+      <span class="spacer"></span>
       <button id="newver" class="badge a" hidden>New version — reload</button>
       <span id="queue-chip" class="badge a" hidden>0 to send</span>
       <span id="sync-chip" class="badge n">this device</span>
@@ -21,18 +29,13 @@
     </div>
     <h1 id="dateline" class="title">…</h1>
     <div id="datesub" class="micro muted"></div>
-    <nav class="tabs" id="tabs" role="tablist">
-      <button data-tab="today" aria-selected="true">Today</button>
-      <button data-tab="week" aria-selected="false">Week</button>
-      <button data-tab="ritual" aria-selected="false">Ritual</button>
-      <button data-tab="summary" aria-selected="false">Summary</button>
-    </nav>
   </div>
 </header>
 
 <main class="wrap">
   <section id="view-today">
     <div id="today-banner"></div>
+    <div class="card" id="progress-card"></div>
     <div class="card">
       <div class="card-head" id="today-head"></div>
       <div id="today-list" class="rituals"></div>
@@ -121,6 +124,15 @@
   </section>
   <footer>Ritual Log · modelled on Mini Rituals · <a href="https://github.com/RoAlfonsin/ritual-log">repo</a></footer>
 </main>
+
+<nav class="tabs bottom" id="tabs" role="tablist">
+  <div class="wrap">
+    <button data-tab="today" aria-selected="true">Today</button>
+    <button data-tab="week" aria-selected="false">Week</button>
+    <button data-tab="ritual" aria-selected="false">Ritual</button>
+    <button data-tab="summary" aria-selected="false">Summary</button>
+  </div>
+</nav>
 
 <div id="moment"><div class="bloom">
   <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>

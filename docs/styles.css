@@ -39,7 +39,7 @@ html, body { margin: 0; padding: 0; }
 body {
   background: var(--bg); color: var(--ink);
   font: 17px/1.41 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif;
-  padding-bottom: 48px; overscroll-behavior-y: contain;
+  padding-bottom: calc(92px + env(safe-area-inset-bottom)); overscroll-behavior-y: contain;
 }
 .wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
 h1, h2, h3 { margin: 0; font-weight: 500; letter-spacing: -.02em; }
@@ -60,10 +60,18 @@ header.bar { position: sticky; top: 0; z-index: 30; background: var(--bg);
 .bar .row1 { display: flex; align-items: baseline; gap: 10px; padding: 14px 0 2px; }
 .brand { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 #clock { margin-left: auto; font-size: 14px; color: var(--muted); }
-nav.tabs { display: flex; gap: 4px; margin: 10px 0 12px; background: var(--surface-2); border-radius: var(--r-md); padding: 4px; }
+nav.tabs { background: var(--surface-2); border-radius: var(--r-md); padding: 4px; }
 nav.tabs button { flex: 1; padding: 10px 6px; border: 0; border-radius: var(--r-sm); background: transparent;
   color: var(--muted); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .16s var(--ease), color .16s var(--ease); }
 nav.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+
+/* the nav lives at the bottom, where a thumb is */
+nav.tabs.bottom { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; border-radius: 0; padding: 0;
+  background: var(--bg); background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(18px); border-top: 1px solid var(--border); }
+nav.tabs.bottom .wrap { display: flex; gap: 4px; padding: 8px 20px calc(8px + env(safe-area-inset-bottom)); }
+nav.tabs.bottom button { padding: 12px 6px; font-size: 14px; }
+nav.tabs.bottom button[aria-selected="true"] { background: var(--accent-tint); color: var(--accent); box-shadow: none; }
 
 /* cards */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 18px; margin: 14px 0; }
@@ -93,7 +101,9 @@ button.b.block { width: 100%; }
 .badge.n { background: var(--surface-2); color: var(--muted); }
 .badge.warn { background: var(--accent-tint); color: var(--accent); }
 .badge.live { animation: pulse 1.6s var(--ease) infinite; }
-#newver { border: 0; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: auto; }
+#newver { border: 0; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+#install { border: 0; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.spacer { flex: 1; }
 
 /* the day's and the week's rituals — one compact line each */
 .rituals { display: flex; flex-direction: column; }
@@ -171,10 +181,19 @@ input[type=text], input[type=number] { background: var(--surface-2); color: var(
 .toggle.on .sw::after { left: 21px; }
 .toggle .lbl { flex: 1; }
 .toggle .lbl small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 400; margin-top: 2px; }
-#sync-chip { margin-left: auto; }
-#queue-chip { margin-left: auto; }
-#queue-chip[hidden] ~ #sync-chip { margin-left: auto; }
+#sync-chip { }
 #clock { margin-left: 0; }
+
+/* day and week completion at a glance */
+#progress-card { display: flex; gap: 8px; padding: 16px 18px; }
+.pct-block { flex: 1; text-align: center; }
+.ring-wrap { position: relative; width: 66px; height: 66px; margin: 0 auto 7px; }
+.ring-wrap svg { display: block; width: 100%; height: 100%; }
+.pct-num { position: absolute; inset: 0; display: grid; place-items: center; font-size: 15.5px; font-weight: 700; letter-spacing: -.03em; }
+.pct-block .k { font-size: 13px; font-weight: 600; }
+.pct-block .m { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.pct-block .s { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+@media (max-width: 420px) { .ring-wrap { width: 58px; height: 58px; } .pct-num { font-size: 14px; } }
 
 /* a single ritual's check bloom is small; the whole day gets the party */
 #moment.small .bloom { width: 66px; height: 66px; }

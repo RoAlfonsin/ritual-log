@@ -460,7 +460,7 @@ function fallbackCopy(text, done) {
 }
 
 /* ---------- render ---------- */
-function renderAll() { renderHeader(); renderToday(); renderWeek(); renderRitual(); renderSummary(); renderChips(); }
+function renderAll() { renderHeader(); renderProgress(); renderToday(); renderWeek(); renderRitual(); renderSummary(); renderChips(); }
 
 function renderHeader() {
   document.getElementById('clock').textContent = D.hhmm(Date.now());
@@ -504,6 +504,35 @@ function ritualRow(ritual) {
 }
 function sectionHead(label, right) {
   return '<div class="dayhead"><span>' + esc(label) + '</span><span class="tnum">' + esc(right || '') + '</span></div>';
+}
+
+/* How much of the day and of the week is behind me — two rings, at a glance. */
+function ring(pct, size) {
+  const r = size / 2 - 5.5, c = 2 * Math.PI * r;
+  const off = c * (1 - Math.max(0, Math.min(100, pct)) / 100);
+  return '<svg viewBox="0 0 ' + size + ' ' + size + '" aria-hidden="true">' +
+    '<circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="5.5"/>' +
+    '<circle cx="' + size / 2 + '" cy="' + size / 2 + '" r="' + r + '" fill="none" stroke="var(--accent)" stroke-width="5.5" stroke-linecap="round" ' +
+      'stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" ' +
+      'transform="rotate(-90 ' + size / 2 + ' ' + size / 2 + ')"/></svg>';
+}
+
+function pctBlock(label, p, work) {
+  const pct = p.n ? Math.round((p.done / p.n) * 100) : 0;
+  return '<div class="pct-block"><div class="ring-wrap">' + ring(pct, 66) +
+    '<div class="pct-num tnum">' + pct + '%</div></div>' +
+    '<div class="k">' + esc(label) + '</div>' +
+    '<div class="m tnum">' + p.done + '/' + p.n + '</div>' +
+    (work ? '<div class="s tnum">' + dur(work) + ' work</div>' : '') + '</div>';
+}
+
+function renderProgress() {
+  const el = document.getElementById('progress-card');
+  if (!el) return;
+  el.hidden = !(S.plan.rituals || []).length;
+  const w = weekProgress();
+  el.innerHTML = pctBlock('Today', dayProgress(D.weekdayCode()), workMinutes(todayRituals())) +
+    pctBlock('This week', w, w.work);
 }
 
 function renderToday() {
@@ -688,7 +717,8 @@ function renderSummary() {
     ['Week', w.done + '/' + w.n + ' rituals'],
     ['Week work', w.work ? dur(w.work) : '—'],
     ['To send', S.db.outbox.length ? S.db.outbox.length + ' line(s) queued' : 'nothing waiting'],
-    ['Shared log', S.sync === 'synced' ? 'up to date' : S.sync === 'local' ? 'this device only' : (S.syncMsg || S.sync)]
+    ['Shared log', S.sync === 'synced' ? 'up to date' : S.sync === 'local' ? 'this device only' : (S.syncMsg || S.sync)],
+    ['This device', standalone() ? 'installed app' : (isIOS() ? 'Safari tab — Share → Add to Home Screen' : 'browser tab — tap Install to add it')]
   ];
   document.getElementById('summary').innerHTML = rows.map(r =>
     '<div class="kv"><span class="k">' + r[0] + '</span><span class="v tnum">' + esc(r[1]) + '</span></div>').join('') +
@@ -828,6 +858,7 @@ document.addEventListener('click', e => {
     else completeStep(ritual, t.dataset.skip, true);
     return;
   }
+  if (t.id === 'install') return install();
   if (t.id === 'rv-abandon') return ritual ? abandonRun(ritual) : null;
   if (t.id === 'x-add') {
     const tx = document.getElementById('x-text').value.trim();
@@ -903,6 +934,40 @@ async function checkVersion(force) {
   } catch (e) { /* local dev has no version.json */ }
 }
 
+/* ---------- install it on the phone ---------- */
+/* Chrome fires beforeinstallprompt once the manifest, the icons and the service
+   worker are all in place — that is the moment to offer the button. Safari never
+   fires it, so iOS gets told where the button is instead. */
+let installEvt = null;
+function standalone() {
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+    window.navigator.standalone === true;
+}
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+function showInstallChip() {
+  const b = document.getElementById('install');
+  if (b) b.hidden = standalone();
+}
+function install() {
+  if (installEvt) {
+    installEvt.prompt();
+    installEvt.userChoice.then(c => {
+      installEvt = null; showInstallChip();
+      if (c && c.outcome === 'accepted') toast('Installing — it will live on your home screen');
+    }).catch(() => {});
+    return;
+  }
+  toast(isIOS() ? 'Share → Add to Home Screen' : 'Browser menu → Install app');
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; showInstallChip(); });
+window.addEventListener('appinstalled', () => { installEvt = null; showInstallChip(); toast('Installed — it lives on your home screen now'); });
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
+
 /* ---------- boot ---------- */
 (function boot() {
   const cached = loadPlanCache();
@@ -923,6 +988,7 @@ async function checkVersion(force) {
   }, 30000);
   S.timerTick = setInterval(paintLiveTimer, 1000);
   checkVersion(true);
+  showInstallChip();
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { if (S.dirty && token()) push(); return; }
     flushOutbox(); renderAll(); if (token()) pull(); checkVersion();
