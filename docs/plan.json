@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-02T21:50:31-06:00",
+  "updated": "2026-10-02T22:42:34-06:00",
   "source": {
     "week_file": "/home/ro/.hermes/state/schedule/weeks/2026-W40.md",
     "life_file": "/home/ro/.hermes/state/life/weeks/2026-W40.md"
@@ -28,32 +28,70 @@
       ]
     },
     {
-      "id": "mon-cleaning",
+      "id": "mon-sweep-vacuum-1-3",
       "day": "mon",
-      "title": "Mon Cleaning",
+      "title": "Mon Sweep + vacuum (1/3)",
       "order": 2,
-      "start": "07:20",
-      "end": "08:30",
-      "minutes": 70,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Mon Cleaning"
+          "title": "Mon Sweep + vacuum (1/3)"
         }
       ]
     },
     {
-      "id": "mon-exercise-meditation",
+      "id": "mon-laundry-1-put-in",
       "day": "mon",
-      "title": "Mon Exercise + meditation",
+      "title": "Mon Laundry 1 — put in",
       "order": 3,
-      "start": "08:30",
-      "end": "09:30",
-      "minutes": 60,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Mon Exercise + meditation"
+          "title": "Mon Laundry 1 — put in"
+        }
+      ]
+    },
+    {
+      "id": "mon-cat-litter-scoop",
+      "day": "mon",
+      "title": "Mon Cat litter — scoop",
+      "order": 4,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Mon Cat litter — scoop"
+        }
+      ]
+    },
+    {
+      "id": "mon-laundry-1-hang-out",
+      "day": "mon",
+      "title": "Mon Laundry 1 — hang out",
+      "order": 5,
+      "block": "Exercise + meditation",
+      "block_window": "08:30–09:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Mon Laundry 1 — hang out"
         }
       ]
     },
@@ -61,7 +99,7 @@
       "id": "mon-breakfast",
       "day": "mon",
       "title": "Mon Breakfast (cook + eat)",
-      "order": 4,
+      "order": 6,
       "start": "09:30",
       "end": "10:10",
       "minutes": 40,
@@ -73,17 +111,19 @@
       ]
     },
     {
-      "id": "mon-shower-grooming",
+      "id": "mon-shave-1-3",
       "day": "mon",
-      "title": "Mon Shower + grooming",
-      "order": 5,
-      "start": "10:10",
-      "end": "10:30",
-      "minutes": 20,
+      "title": "Mon Shave (1/3)",
+      "order": 7,
+      "block": "Shower + grooming",
+      "block_window": "10:10–10:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Mon Shower + grooming"
+          "title": "Mon Shave (1/3)"
         }
       ]
     },
@@ -91,7 +131,7 @@
       "id": "mon-work-a",
       "day": "mon",
       "title": "Mon Work A · iCare 1.1–1.2.1",
-      "order": 6,
+      "order": 8,
       "start": "10:30",
       "end": "13:30",
       "minutes": 180,
@@ -104,17 +144,19 @@
       "kind": "work"
     },
     {
-      "id": "mon-cook-dinner",
+      "id": "mon-dishes",
       "day": "mon",
-      "title": "Mon Cook + dinner (+ dishes)",
-      "order": 7,
-      "start": "13:30",
-      "end": "15:30",
-      "minutes": 120,
+      "title": "Mon Dishes",
+      "order": 9,
+      "block": "Cook + dinner",
+      "block_window": "13:30–15:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Mon Cook + dinner (+ dishes)"
+          "title": "Mon Dishes"
         }
       ]
     },
@@ -122,7 +164,7 @@
       "id": "mon-work-b",
       "day": "mon",
       "title": "Mon Work B · Upwork — 2 items live",
-      "order": 8,
+      "order": 10,
       "start": "15:30",
       "end": "19:00",
       "minutes": 210,
@@ -138,7 +180,7 @@
       "id": "mon-journaling",
       "day": "mon",
       "title": "Mon Journaling",
-      "order": 9,
+      "order": 11,
       "start": "19:00",
       "end": "19:30",
       "minutes": 30,
@@ -150,17 +192,19 @@
       ]
     },
     {
-      "id": "mon-rest",
+      "id": "mon-laundry-1-arrange",
       "day": "mon",
-      "title": "Mon Rest (games, Netflix, reading)",
-      "order": 10,
-      "start": "19:30",
-      "end": "21:30",
-      "minutes": 120,
+      "title": "Mon Laundry 1 — arrange",
+      "order": 12,
+      "block": "Rest (games, Netflix, reading)",
+      "block_window": "19:30–21:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Mon Rest (games, Netflix, reading)"
+          "title": "Mon Laundry 1 — arrange"
         }
       ]
     },
@@ -168,7 +212,7 @@
       "id": "mon-lights-out",
       "day": "mon",
       "title": "Mon Lights out",
-      "order": 11,
+      "order": 13,
       "start": "21:30",
       "end": null,
       "minutes": null,
@@ -195,17 +239,70 @@
       ]
     },
     {
-      "id": "tue-cleaning",
+      "id": "tue-bathroom-toilet-sink-shower",
       "day": "tue",
-      "title": "Tue Cleaning",
+      "title": "Tue Bathroom — toilet, sink, shower",
       "order": 2,
-      "start": "07:20",
-      "end": "08:30",
-      "minutes": 70,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Tue Cleaning"
+          "title": "Tue Bathroom — toilet, sink, shower"
+        }
+      ]
+    },
+    {
+      "id": "tue-trash-out-1-3",
+      "day": "tue",
+      "title": "Tue Trash out (1/3)",
+      "order": 3,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Tue Trash out (1/3)"
+        }
+      ]
+    },
+    {
+      "id": "tue-cat-litter-scoop",
+      "day": "tue",
+      "title": "Tue Cat litter — scoop",
+      "order": 4,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Tue Cat litter — scoop"
+        }
+      ]
+    },
+    {
+      "id": "tue-full-litter-sand-change",
+      "day": "tue",
+      "title": "Tue Full litter sand change",
+      "order": 5,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Tue Full litter sand change"
         }
       ]
     },
@@ -213,7 +310,7 @@
       "id": "tue-exercise-meditation",
       "day": "tue",
       "title": "Tue Exercise + meditation",
-      "order": 3,
+      "order": 6,
       "start": "08:30",
       "end": "09:30",
       "minutes": 60,
@@ -228,7 +325,7 @@
       "id": "tue-breakfast",
       "day": "tue",
       "title": "Tue Breakfast (cook + eat)",
-      "order": 4,
+      "order": 7,
       "start": "09:30",
       "end": "10:10",
       "minutes": 40,
@@ -240,17 +337,19 @@
       ]
     },
     {
-      "id": "tue-shower-grooming",
+      "id": "tue-hand-nails",
       "day": "tue",
-      "title": "Tue Shower + grooming",
-      "order": 5,
-      "start": "10:10",
-      "end": "10:30",
-      "minutes": 20,
+      "title": "Tue Hand nails",
+      "order": 8,
+      "block": "Shower + grooming",
+      "block_window": "10:10–10:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Tue Shower + grooming"
+          "title": "Tue Hand nails"
         }
       ]
     },
@@ -258,7 +357,7 @@
       "id": "tue-work-a",
       "day": "tue",
       "title": "Tue Work A · iCare 1.3–1.6",
-      "order": 6,
+      "order": 9,
       "start": "10:30",
       "end": "13:30",
       "minutes": 180,
@@ -271,17 +370,19 @@
       "kind": "work"
     },
     {
-      "id": "tue-cook-dinner",
+      "id": "tue-dishes",
       "day": "tue",
-      "title": "Tue Cook + dinner (+ dishes)",
-      "order": 7,
-      "start": "13:30",
-      "end": "15:30",
-      "minutes": 120,
+      "title": "Tue Dishes",
+      "order": 10,
+      "block": "Cook + dinner",
+      "block_window": "13:30–15:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Tue Cook + dinner (+ dishes)"
+          "title": "Tue Dishes"
         }
       ]
     },
@@ -289,7 +390,7 @@
       "id": "tue-work-b",
       "day": "tue",
       "title": "Tue Work B · Mini Rituales 01+02 (legacy repo)",
-      "order": 8,
+      "order": 11,
       "start": "15:30",
       "end": "19:00",
       "minutes": 210,
@@ -305,7 +406,7 @@
       "id": "tue-journaling",
       "day": "tue",
       "title": "Tue Journaling",
-      "order": 9,
+      "order": 12,
       "start": "19:00",
       "end": "19:30",
       "minutes": 30,
@@ -320,7 +421,7 @@
       "id": "tue-rest",
       "day": "tue",
       "title": "Tue Rest (games, Netflix, reading)",
-      "order": 10,
+      "order": 13,
       "start": "19:30",
       "end": "21:30",
       "minutes": 120,
@@ -335,7 +436,7 @@
       "id": "tue-lights-out",
       "day": "tue",
       "title": "Tue Lights out",
-      "order": 11,
+      "order": 14,
       "start": "21:30",
       "end": null,
       "minutes": null,
@@ -362,32 +463,70 @@
       ]
     },
     {
-      "id": "wed-cleaning",
+      "id": "wed-sweep-vacuum-2-3",
       "day": "wed",
-      "title": "Wed Cleaning",
+      "title": "Wed Sweep + vacuum (2/3)",
       "order": 2,
-      "start": "07:20",
-      "end": "08:30",
-      "minutes": 70,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Wed Cleaning"
+          "title": "Wed Sweep + vacuum (2/3)"
         }
       ]
     },
     {
-      "id": "wed-exercise-meditation",
+      "id": "wed-trash-out-3-3",
       "day": "wed",
-      "title": "Wed Exercise + meditation",
+      "title": "Wed Trash out (3/3)",
       "order": 3,
-      "start": "08:30",
-      "end": "09:30",
-      "minutes": 60,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Wed Exercise + meditation"
+          "title": "Wed Trash out (3/3)"
+        }
+      ]
+    },
+    {
+      "id": "wed-cat-litter-scoop",
+      "day": "wed",
+      "title": "Wed Cat litter — scoop",
+      "order": 4,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Cat litter — scoop"
+        }
+      ]
+    },
+    {
+      "id": "wed-laundry-2-hang-out",
+      "day": "wed",
+      "title": "Wed Laundry 2 — hang out",
+      "order": 5,
+      "block": "Exercise + meditation",
+      "block_window": "08:30–09:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Wed Laundry 2 — hang out"
         }
       ]
     },
@@ -395,7 +534,7 @@
       "id": "wed-breakfast",
       "day": "wed",
       "title": "Wed Breakfast (cook + eat)",
-      "order": 4,
+      "order": 6,
       "start": "09:30",
       "end": "10:10",
       "minutes": 40,
@@ -407,17 +546,19 @@
       ]
     },
     {
-      "id": "wed-shower-grooming",
+      "id": "wed-shave-2-3",
       "day": "wed",
-      "title": "Wed Shower + grooming",
-      "order": 5,
-      "start": "10:10",
-      "end": "10:30",
-      "minutes": 20,
+      "title": "Wed Shave (2/3)",
+      "order": 7,
+      "block": "Shower + grooming",
+      "block_window": "10:10–10:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Wed Shower + grooming"
+          "title": "Wed Shave (2/3)"
         }
       ]
     },
@@ -425,7 +566,7 @@
       "id": "wed-work-a",
       "day": "wed",
       "title": "Wed Work A · iCare 1.7  (#55)",
-      "order": 6,
+      "order": 8,
       "start": "10:30",
       "end": "13:30",
       "minutes": 180,
@@ -438,17 +579,19 @@
       "kind": "work"
     },
     {
-      "id": "wed-cook-dinner",
+      "id": "wed-dishes",
       "day": "wed",
-      "title": "Wed Cook + dinner (+ dishes)",
-      "order": 7,
-      "start": "13:30",
-      "end": "15:30",
-      "minutes": 120,
+      "title": "Wed Dishes",
+      "order": 9,
+      "block": "Cook + dinner",
+      "block_window": "13:30–15:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Wed Cook + dinner (+ dishes)"
+          "title": "Wed Dishes"
         }
       ]
     },
@@ -456,7 +599,7 @@
       "id": "wed-work-b",
       "day": "wed",
       "title": "Wed Work B · Iván 18:30",
-      "order": 8,
+      "order": 10,
       "start": "15:30",
       "end": "19:00",
       "minutes": 210,
@@ -472,7 +615,7 @@
       "id": "wed-journaling",
       "day": "wed",
       "title": "Wed Journaling",
-      "order": 9,
+      "order": 11,
       "start": "19:00",
       "end": "19:30",
       "minutes": 30,
@@ -484,17 +627,19 @@
       ]
     },
     {
-      "id": "wed-rest",
+      "id": "wed-laundry-2-arrange",
       "day": "wed",
-      "title": "Wed Rest (games, Netflix, reading)",
-      "order": 10,
-      "start": "19:30",
-      "end": "21:30",
-      "minutes": 120,
+      "title": "Wed Laundry 2 — arrange",
+      "order": 12,
+      "block": "Rest (games, Netflix, reading)",
+      "block_window": "19:30–21:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Wed Rest (games, Netflix, reading)"
+          "title": "Wed Laundry 2 — arrange"
         }
       ]
     },
@@ -502,7 +647,7 @@
       "id": "wed-lights-out",
       "day": "wed",
       "title": "Wed Lights out",
-      "order": 11,
+      "order": 13,
       "start": "21:30",
       "end": null,
       "minutes": null,
@@ -529,17 +674,87 @@
       ]
     },
     {
-      "id": "thu-cleaning",
+      "id": "thu-mop-floors",
       "day": "thu",
-      "title": "Thu Cleaning",
+      "title": "Thu Mop floors",
       "order": 2,
-      "start": "07:20",
-      "end": "08:30",
-      "minutes": 70,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Thu Cleaning"
+          "title": "Thu Mop floors"
+        }
+      ]
+    },
+    {
+      "id": "thu-change-bedsheets",
+      "day": "thu",
+      "title": "Thu Change bedsheets",
+      "order": 3,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Change bedsheets"
+        }
+      ]
+    },
+    {
+      "id": "thu-trash-out-2-3",
+      "day": "thu",
+      "title": "Thu Trash out (2/3)",
+      "order": 4,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Trash out (2/3)"
+        }
+      ]
+    },
+    {
+      "id": "thu-laundry-2-put-in",
+      "day": "thu",
+      "title": "Thu Laundry 2 — put in",
+      "order": 5,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Laundry 2 — put in"
+        }
+      ]
+    },
+    {
+      "id": "thu-cat-litter-scoop",
+      "day": "thu",
+      "title": "Thu Cat litter — scoop",
+      "order": 6,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Thu Cat litter — scoop"
         }
       ]
     },
@@ -547,7 +762,7 @@
       "id": "thu-exercise-meditation",
       "day": "thu",
       "title": "Thu Exercise + meditation",
-      "order": 3,
+      "order": 7,
       "start": "08:30",
       "end": "09:30",
       "minutes": 60,
@@ -562,7 +777,7 @@
       "id": "thu-breakfast",
       "day": "thu",
       "title": "Thu Breakfast (cook + eat)",
-      "order": 4,
+      "order": 8,
       "start": "09:30",
       "end": "10:10",
       "minutes": 40,
@@ -574,17 +789,19 @@
       ]
     },
     {
-      "id": "thu-shower-grooming",
+      "id": "thu-exfoliate",
       "day": "thu",
-      "title": "Thu Shower + grooming",
-      "order": 5,
-      "start": "10:10",
-      "end": "10:30",
-      "minutes": 20,
+      "title": "Thu Exfoliate",
+      "order": 9,
+      "block": "Shower + grooming",
+      "block_window": "10:10–10:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Thu Shower + grooming"
+          "title": "Thu Exfoliate"
         }
       ]
     },
@@ -592,7 +809,7 @@
       "id": "thu-work-a",
       "day": "thu",
       "title": "Thu Work A · Mini Rituales — M1-01…M1-10, M1-12, M1-18",
-      "order": 6,
+      "order": 10,
       "start": "10:30",
       "end": "13:30",
       "minutes": 180,
@@ -605,17 +822,19 @@
       "kind": "work"
     },
     {
-      "id": "thu-cook-dinner",
+      "id": "thu-dishes",
       "day": "thu",
-      "title": "Thu Cook + dinner (+ dishes)",
-      "order": 7,
-      "start": "13:30",
-      "end": "15:30",
-      "minutes": 120,
+      "title": "Thu Dishes",
+      "order": 11,
+      "block": "Cook + dinner",
+      "block_window": "13:30–15:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Thu Cook + dinner (+ dishes)"
+          "title": "Thu Dishes"
         }
       ]
     },
@@ -623,7 +842,7 @@
       "id": "thu-work-b",
       "day": "thu",
       "title": "Thu Work B · Upwork",
-      "order": 8,
+      "order": 12,
       "start": "15:30",
       "end": "19:00",
       "minutes": 210,
@@ -639,7 +858,7 @@
       "id": "thu-journaling",
       "day": "thu",
       "title": "Thu Journaling",
-      "order": 9,
+      "order": 13,
       "start": "19:00",
       "end": "19:30",
       "minutes": 30,
@@ -654,7 +873,7 @@
       "id": "thu-rest",
       "day": "thu",
       "title": "Thu Rest (games, Netflix, reading)",
-      "order": 10,
+      "order": 14,
       "start": "19:30",
       "end": "21:30",
       "minutes": 120,
@@ -669,7 +888,7 @@
       "id": "thu-lights-out",
       "day": "thu",
       "title": "Thu Lights out",
-      "order": 11,
+      "order": 15,
       "start": "21:30",
       "end": null,
       "minutes": null,
@@ -696,32 +915,70 @@
       ]
     },
     {
-      "id": "fri-cleaning",
+      "id": "fri-sweep-vacuum-3-3",
       "day": "fri",
-      "title": "Fri Cleaning",
+      "title": "Fri Sweep + vacuum (3/3)",
       "order": 2,
-      "start": "07:20",
-      "end": "08:30",
-      "minutes": 70,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Fri Cleaning"
+          "title": "Fri Sweep + vacuum (3/3)"
         }
       ]
     },
     {
-      "id": "fri-exercise-meditation",
+      "id": "fri-laundry-3-put-in",
       "day": "fri",
-      "title": "Fri Exercise + meditation",
+      "title": "Fri Laundry 3 — put in",
       "order": 3,
-      "start": "08:30",
-      "end": "09:30",
-      "minutes": 60,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Fri Exercise + meditation"
+          "title": "Fri Laundry 3 — put in"
+        }
+      ]
+    },
+    {
+      "id": "fri-cat-litter-scoop",
+      "day": "fri",
+      "title": "Fri Cat litter — scoop",
+      "order": 4,
+      "block": "Cleaning",
+      "block_window": "07:20–08:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Cat litter — scoop"
+        }
+      ]
+    },
+    {
+      "id": "fri-laundry-3-hang-out",
+      "day": "fri",
+      "title": "Fri Laundry 3 — hang out",
+      "order": 5,
+      "block": "Exercise + meditation",
+      "block_window": "08:30–09:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
+      "steps": [
+        {
+          "id": "main",
+          "title": "Fri Laundry 3 — hang out"
         }
       ]
     },
@@ -729,7 +986,7 @@
       "id": "fri-breakfast",
       "day": "fri",
       "title": "Fri Breakfast (cook + eat)",
-      "order": 4,
+      "order": 6,
       "start": "09:30",
       "end": "10:10",
       "minutes": 40,
@@ -741,17 +998,19 @@
       ]
     },
     {
-      "id": "fri-shower-grooming",
+      "id": "fri-shave-3-3",
       "day": "fri",
-      "title": "Fri Shower + grooming",
-      "order": 5,
-      "start": "10:10",
-      "end": "10:30",
-      "minutes": 20,
+      "title": "Fri Shave (3/3)",
+      "order": 7,
+      "block": "Shower + grooming",
+      "block_window": "10:10–10:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Fri Shower + grooming"
+          "title": "Fri Shave (3/3)"
         }
       ]
     },
@@ -759,7 +1018,7 @@
       "id": "fri-work-a",
       "day": "fri",
       "title": "Fri Work A · iCare — merge #56, then 1.11",
-      "order": 6,
+      "order": 8,
       "start": "10:30",
       "end": "13:30",
       "minutes": 180,
@@ -772,17 +1031,19 @@
       "kind": "work"
     },
     {
-      "id": "fri-cook-dinner",
+      "id": "fri-dishes",
       "day": "fri",
-      "title": "Fri Cook + dinner (+ dishes)",
-      "order": 7,
-      "start": "13:30",
-      "end": "15:30",
-      "minutes": 120,
+      "title": "Fri Dishes",
+      "order": 9,
+      "block": "Cook + dinner",
+      "block_window": "13:30–15:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Fri Cook + dinner (+ dishes)"
+          "title": "Fri Dishes"
         }
       ]
     },
@@ -790,7 +1051,7 @@
       "id": "fri-work-b",
       "day": "fri",
       "title": "Fri Work B · Mini Rituales — M1-11 + M1-13",
-      "order": 8,
+      "order": 10,
       "start": "15:30",
       "end": "19:00",
       "minutes": 210,
@@ -806,7 +1067,7 @@
       "id": "fri-journaling",
       "day": "fri",
       "title": "Fri Journaling",
-      "order": 9,
+      "order": 11,
       "start": "19:00",
       "end": "19:30",
       "minutes": 30,
@@ -818,17 +1079,19 @@
       ]
     },
     {
-      "id": "fri-rest",
+      "id": "fri-laundry-3-arrange",
       "day": "fri",
-      "title": "Fri Rest (games, Netflix, reading)",
-      "order": 10,
-      "start": "19:30",
-      "end": "21:30",
-      "minutes": 120,
+      "title": "Fri Laundry 3 — arrange",
+      "order": 12,
+      "block": "Rest (games, Netflix, reading)",
+      "block_window": "19:30–21:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Fri Rest (games, Netflix, reading)"
+          "title": "Fri Laundry 3 — arrange"
         }
       ]
     },
@@ -836,7 +1099,7 @@
       "id": "fri-lights-out",
       "day": "fri",
       "title": "Fri Lights out",
-      "order": 11,
+      "order": 13,
       "start": "21:30",
       "end": null,
       "minutes": null,
@@ -939,17 +1202,19 @@
       "kind": "work"
     },
     {
-      "id": "sat-cook-dinner",
+      "id": "sat-dishes",
       "day": "sat",
-      "title": "Sat Cook + dinner (+ dishes)",
+      "title": "Sat Dishes",
       "order": 7,
-      "start": "13:30",
-      "end": "15:30",
-      "minutes": 120,
+      "block": "Cook + dinner",
+      "block_window": "13:30–15:30",
+      "start": null,
+      "end": null,
+      "minutes": null,
       "steps": [
         {
           "id": "main",
-          "title": "Sat Cook + dinner (+ dishes)"
+          "title": "Sat Dishes"
         }
       ]
     },

@@ -12,6 +12,12 @@ One fund of rituals, one day at a time:
 
 - Every ritual is a concrete **per-day instance**: *Mon Read*, *Fri Read*,
   *Fri Work A · iCare — merge #56, then 1.11*.
+- A block that holds several chores is **dissolved into those chores**: there is no
+  *Fri Cleaning* ritual — there is *Fri Sweep + vacuum (3/3)*, *Fri Laundry 3 — put
+  in* and *Fri Cat litter — scoop*, each with its own run and its own line in the log.
+  The same happens inside *Shower + grooming* (the day's shave/nails), *Exercise +
+  meditation* (hanging the wash out), *Cook + dinner* (dishes) and *Rest* (arranging
+  the wash). A block whose chores are all absent — Saturday — stays as one ritual.
 - **Week** is the whole fund — all six days plus the *any day this week* items.
 - **Today** is only the slice that belongs to the current weekday.
 - The day is **not** a ritual: nothing wraps the day. A day is a list of small
@@ -110,9 +116,12 @@ It reads, read-only:
 - `~/.hermes/state/life/weeks/YYYY-Www.md` → the "Once this week" items
 
 Each of the 11 skeleton blocks becomes a ritual for **every** weekday (Mon–Sat),
-titled with its day, and the work blocks take the day map's item text. Chore
-labels are copied **verbatim** from the `#life` week file: they are the same
-strings the Discord checklist uses, so the two can never drift.
+titled with its day, and the work blocks take the day map's item text. Blocks that
+only contain chores are dissolved into them: the chore list and its per-weekday
+placement come from `~/.hermes/scripts/day_plan.py`'s
+`CHORES` / `GROOMING` / `HANG_OUT` / `REST_EXTRA` tables, **imported rather than
+re-typed**, so the labels are the same strings the #life checklist uses and can
+never drift.
 
 ## Deploy
 

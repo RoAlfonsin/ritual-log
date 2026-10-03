@@ -442,7 +442,8 @@ function statusBadge(ritual, state) {
   const run = getRunFor(ritual, false);
   if (state === 'active' && run) return '<span class="badge a tnum">' + durLive(stepElapsed(run, activeStepId(run))) + '</span>';
   const plan = planMinutes(ritual);
-  return '<span class="badge n tnum">' + (plan ? dur(plan) : '—') + '</span>';
+  if (!plan) return '';                       /* a chore inside a block has no plan of its own */
+  return '<span class="badge n tnum">' + dur(plan) + '</span>';
 }
 function ritualRow(ritual) {
   const state = ritualState(ritual);
@@ -451,6 +452,7 @@ function ritualRow(ritual) {
   const el = ritualRunMinutes(ritual);
   const plan = planMinutes(ritual);
   const sub = [
+    ritual.block ? ritual.block + (ritual.block_window ? ' · ' + ritual.block_window : '') : null,
     ritual.start ? 'plan ' + ritual.start + (ritual.end ? '–' + ritual.end : '') : null,
     el >= 1 ? dur(el) + (plan && state === 'completed' ? ' / ' + dur(plan) : '') : null,
     run && run.startedAt && state === 'active' ? 'since ' + D.hhmm(run.startedAt) : null,
@@ -541,6 +543,7 @@ function renderRitual() {
   document.getElementById('rv-state').textContent = state === 'active' ? 'active run' : state;
   document.getElementById('rv-state').className = 'badge ' + (state === 'active' ? 'a' : state === 'completed' ? 'ok' : 'n');
   document.getElementById('rv-sub').textContent = [
+    ritual.block ? 'in ' + ritual.block + (ritual.block_window ? ' · ' + ritual.block_window : '') : null,
     planMinutes(ritual) ? 'plan ' + dur(planMinutes(ritual)) + (ritual.start ? ' · ' + ritual.start + (ritual.end ? '–' + ritual.end : '') : '') : '',
     steps.length + (steps.length === 1 ? ' step' : ' steps'),
     run.startedAt ? 'since ' + D.hhmm(run.startedAt) : 'not started'
@@ -658,8 +661,7 @@ function renderSummary() {
   const hist = [];
   Object.keys(S.db.runs || {}).forEach(k => {
     const run = S.db.runs[k];
-    const ritual = S.byId[run.ritual];
-    if (!ritual) return;
+    const ritual = S.byId[run.ritual] || { title: run.ritual + ' (older revision)' };
     Object.keys(run.steps || {}).forEach(sid => {
       const s = run.steps[sid];
       if (!s.completedAt) return;

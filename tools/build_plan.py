@@ -9,12 +9,37 @@ Sources (read-only):
 Chore labels are copied VERBATIM from the #life week file: they are the same
 strings the Discord checklist uses, so the two never drift.
 """
-import json, re, sys, datetime as dt
+import json, re, sys, datetime as dt, importlib.util
 from pathlib import Path
 
 HOME = Path.home()
 STATE = HOME / ".hermes/state"
 OUT = Path(__file__).resolve().parents[1] / "docs/plan.json"
+SCRIPTS = HOME / ".hermes/scripts"
+
+
+def load_day_plan():
+    """day_plan.py owns the mapping from a skeleton block to the #life chores that
+    sit inside it (CHORES/GROOMING/HANG_OUT/REST_EXTRA). Import it instead of
+    re-typing the labels, so the two can never drift."""
+    spec = importlib.util.spec_from_file_location("day_plan_for_plan", SCRIPTS / "day_plan.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+DAY_PLAN = load_day_plan()
+
+# Blocks that are containers of several #life chores: each chore inside becomes its
+# own mini ritual. Rodri, 2026-10-02: "Friday cleaning should not exist. I should
+# have the cleaning mini rituals for Friday."
+SPLIT = {
+    "cleaning": lambda i: list(DAY_PLAN.CHORES.get(i, [])),
+    "shower-grooming": lambda i: [DAY_PLAN.GROOMING[i]] if i in DAY_PLAN.GROOMING else [],
+    "exercise-meditation": lambda i: [DAY_PLAN.HANG_OUT[i]] if i in DAY_PLAN.HANG_OUT else [],
+    "cook-dinner": lambda i: ["Dishes"],
+    "rest": lambda i: [DAY_PLAN.REST_EXTRA[i]] if i in DAY_PLAN.REST_EXTRA else [],
+}
 
 # Explicit ids for the skeleton rows. Titles stay in the product's language
 # (English, as the Mini Rituals repo is); the label is the source of truth for
@@ -26,7 +51,7 @@ ROWS = {
     "Breakfast (cook + eat)": ("breakfast", "Breakfast (cook + eat)", None),
     "Shower + grooming": ("shower-grooming", "Shower + grooming", None),
     "Work A": ("work-a", "Work A", "work"),
-    "Cook + dinner (+ dishes)": ("cook-dinner", "Cook + dinner (+ dishes)", None),
+    "Cook + dinner (+ dishes)": ("cook-dinner", "Cook + dinner", None),
     "Work B": ("work-b", "Work B", "work"),
     "Journaling": ("journaling", "Journaling", None),
     "Rest (games, Netflix, reading)": ("rest", "Rest (games, Netflix, reading)", None),
@@ -202,14 +227,31 @@ def parse_week(path: Path):
 
 def build_rituals(composer: Path, days: dict, monday: dt.date, week_items: list):
     """One fund of mini rituals, one per day-of-week instance — Mon Read, Fri Read…
+
     The week view is the whole fund; a day view is the slice that belongs to that
-    weekday. Work rituals take that day's day-map item as their title."""
+    weekday. Work rituals take that day's day-map item as their title. Blocks that
+    are containers of several #life chores are dissolved into those chores: Friday
+    has no "Cleaning" ritual, it has vacuum / laundry in / litter scoop, each with
+    its own run and its own line in the log."""
     skel = skeleton(composer)
     out = []
     for i, code in enumerate(DAY_CODES):                 # Mon–Sat; Sunday is free
         date = (monday + dt.timedelta(days=i)).isoformat()
         day = days.get(date, {}) or {}
-        for order, s in enumerate(skel, 1):
+        order = 0
+        for s in skel:
+            parts = SPLIT[s["id"]](i) if s["id"] in SPLIT else []
+            if parts:
+                bw = f"{s['start']}–{s['end']}" if s["start"] and s["end"] else (s["start"] or None)
+                for label in parts:                      # a chore inside the block
+                    order += 1
+                    title = f"{DAY_LABEL[code]} {label}"
+                    out.append({"id": f"{code}-{slug(label)}", "day": code, "title": title,
+                                "order": order, "block": s["title"], "block_window": bw,
+                                "start": None, "end": None, "minutes": None,
+                                "steps": [{"id": "main", "title": title}]})
+                continue                                 # the container is not a ritual itself
+            order += 1
             title = f"{DAY_LABEL[code]} {s['title']}"
             if s["id"] == "work-a" and day.get("work_a"):
                 title = f"{DAY_LABEL[code]} Work A · {day['work_a']}"
