@@ -77,7 +77,11 @@ function schedulePush(delay) {
   clearTimeout(pushTimer);
   pushTimer = setTimeout(push, delay == null ? 2500 : delay);
 }
-function sharedDoc(db) { return { v: 3, updatedAt: db.updated || 0, runs: db.runs || {}, extras: db.extras || {} }; }
+function sharedDoc(db) {
+  const out = { v: 3, updatedAt: db.updated || 0, runs: db.runs || {}, extras: db.extras || {} };
+  if (db.edits) out.edits = db.edits;
+  return out;
+}
 
 async function gh(path, opts = {}) {
   const r = await fetch('https://api.github.com' + path, Object.assign({}, opts, {
@@ -96,6 +100,7 @@ async function pull() {
     const g = await gh('/gists/' + GIST_ID);
     const merged = mergeDocs(sharedDoc(S.db), parseDoc(g.files && g.files[GIST_FILE]));
     S.db.runs = merged.runs; S.db.extras = merged.extras || {};
+    if (merged.edits) S.db.edits = merged.edits;
     save(); renderAll();
     setSync('synced', 'Updated ' + D.hhmm(Date.now()));
     if (S.dirty) push();
@@ -111,6 +116,7 @@ async function push() {
     const g = await gh('/gists/' + GIST_ID);
     const merged = mergeDocs(sharedDoc(S.db), parseDoc(g.files && g.files[GIST_FILE]));
     S.db.runs = merged.runs; S.db.extras = merged.extras || {};
+    if (merged.edits) S.db.edits = merged.edits;
     merged.updatedAt = Date.now(); save();
     await gh('/gists/' + GIST_ID, { method: 'PATCH', body: JSON.stringify({ files: { [GIST_FILE]: { content: JSON.stringify(merged) } } }) });
     S.dirty = false; renderAll();
@@ -149,6 +155,11 @@ function mergeDocs(a, b) {
     ((a.extras || {})[d] || []).concat((b.extras || {})[d] || []).forEach(x => { if (x && x.at != null) seen[x.at + '|' + (x.text || '')] = x; });
     if (Object.keys(seen).length) out.extras[d] = Object.values(seen).sort((p, q) => p.at - q.at);
   });
+  /* Goal edits travel with the runs: the newest edit timestamps wins wholesale, so
+     an edit made on the phone shows up on the laptop and vice versa. */
+  const ea = a.edits, eb = b.edits;
+  const e = (ea && eb) ? ((ea.ts || 0) >= (eb.ts || 0) ? ea : eb) : (ea || eb || null);
+  if (e) out.edits = e;
   return out;
 }
 function ts(r) { return (r && (r.ts || r.completedAt || r.endedAt || r.startedAt)) || 0; }
@@ -515,7 +526,7 @@ function fallbackCopy(text, done) {
 }
 
 /* ---------- render ---------- */
-function renderAll() { renderHeader(); renderProgress(); renderToday(); renderWeek(); renderRitual(); renderSummary(); renderChips(); }
+function renderAll() { renderHeader(); renderProgress(); renderToday(); renderWeek(); renderGoals(); renderRitual(); renderSummary(); renderChips(); }
 
 function renderHeader() {
   document.getElementById('clock').textContent = D.hhmm(Date.now());
@@ -628,13 +639,78 @@ function renderToday() {
     ? '<ul class="plain">' + extras.map((x, i) => '<li><span>' + esc(x.text) + '</span><span class="sp tnum">' + D.hhmm(x.at) +
         (x.minutes ? ' · ' + dur(x.minutes) : '') + '</span><button class="b sm ghost" data-xdel="' + i + '">×</button></li>').join('') + '</ul>'
     : '<div class="micro muted">Nothing extra logged today.</div>';
+}
 
-  document.getElementById('goals').innerHTML = (S.plan.goals || []).map(g =>
+/* ---------- the week's goals: read on Today, edited on the Plan tab ---------- */
+function goalList() {
+  const e = S.db.edits;
+  return (e && e.goals && e.goals.length) ? e.goals : (S.plan.goals || []);
+}
+const isCompletion = g => String(g.headline || '').toLowerCase() === 'completion';
+function goalCards(list) {
+  return list.map(g =>
     '<div class="goal"><div class="gh"><span class="k">' + esc(g.project) + '</span>' +
+      (isCompletion(g) ? '<span class="badge n">completion</span>' : '') +
       (g.status ? '<span class="badge ' + (g.status === 'at_risk' ? 'warn' : 'ok') + '">' + (g.status === 'at_risk' ? 'at risk' : 'on track') + '</span>' : '') +
-      (g.headline ? '<span class="micro muted">' + esc(g.headline) + '</span>' : '') +
-    '</div><div class="small">' + esc(g.detail || '') + '</div></div>').join('') ||
-    '<div class="empty">The week goals arrive with the week plan.</div>';
+      (g.headline && !isCompletion(g) ? '<span class="micro muted">' + esc(g.headline) + '</span>' : '') +
+    '</div><div class="small">' + esc(g.detail || '') + '</div></div>').join('');
+}
+function goalEditor(list) {
+  return list.map((g, i) =>
+    '<div class="goal">' +
+      '<div class="row"><input type="text" data-gi="' + i + '" data-gf="project" value="' + esc(g.project) + '" placeholder="project">' +
+        '<button class="b sm ghost fixed" data-gdel="' + i + '" title="remove this line">×</button></div>' +
+      '<div class="row" style="margin-top:8px"><input type="text" data-gi="' + i + '" data-gf="headline" value="' + esc(g.headline || '') + '" placeholder="headline — or the word completion"></div>' +
+      '<textarea data-gi="' + i + '" data-gf="detail" rows="2" placeholder="detail" style="margin-top:8px">' + esc(g.detail || '') + '</textarea>' +
+    '</div>').join('') +
+    '<div class="row" style="margin-top:10px"><button class="b sm ghost" id="goal-add">＋ Add a line</button></div>';
+}
+function renderGoals() {
+  const el = document.getElementById('goals');
+  if (el) el.innerHTML = goalCards(goalList()) || '<div class="empty">The week goals arrive with the week plan.</div>';
+  renderPlan();
+}
+function renderPlan() {
+  const head = document.getElementById('plan-head');
+  if (!head) return;
+  const w = S.plan.week || {};
+  head.innerHTML = '<span class="k">' + esc(w.label || 'This week') + '</span><span class="spacer"></span>' +
+    '<span class="micro muted tnum">' + esc((w.start || '—') + ' → ' + (w.end || '—')) + '</span>';
+  const edited = !!(S.db.edits && S.db.edits.goals && S.db.edits.goals.length);
+  const all = S.editingGoals ? S.draft : goalList();
+
+  if (S.editingGoals) {
+    document.getElementById('plan-completion').innerHTML =
+      '<div class="micro muted">Every line lives in the list below — the ones marked <b>completion</b> show up as the progress numbers.</div>';
+    document.getElementById('plan-goals').innerHTML = goalEditor(all);
+  } else {
+    const comp = all.filter(isCompletion), rest = all.filter(g => !isCompletion(g));
+    document.getElementById('plan-completion').innerHTML = goalCards(comp) ||
+      '<div class="empty">No completion numbers in this week’s plan yet.</div>';
+    document.getElementById('plan-goals').innerHTML = goalCards(rest) ||
+      '<div class="empty">No week goals in this week’s plan yet.</div>';
+  }
+  document.getElementById('plan-goals-note').textContent = S.editingGoals ? 'unsaved changes' : (edited ? 'edited here · in the shared log' : 'from the week plan');
+  const be = document.getElementById('goal-edit'), bs = document.getElementById('goal-save'), bc = document.getElementById('goal-cancel');
+  be.textContent = S.editingGoals ? 'Editing…' : 'Edit';
+  be.hidden = S.editingGoals;
+  bs.hidden = bc.hidden = !S.editingGoals;
+  document.getElementById('goal-reset').hidden = S.editingGoals || !edited;
+
+  const anchors = S.plan.anchors || [];
+  document.getElementById('plan-anchors').innerHTML = anchors.length
+    ? '<ul class="plain">' + anchors.map(a => '<li><span>' + esc(a) + '</span></li>').join('') + '</ul>'
+    : '<div class="micro muted">No anchors this week.</div>';
+
+  const days = S.plan.days || {};
+  const rows = Object.keys(days).sort();
+  document.getElementById('plan-daymap').innerHTML = rows.length
+    ? '<ul class="plain">' + rows.map(d => {
+        const day = days[d] || {}, bits = [day.work_a, day.work_b].filter(Boolean);
+        return '<li><span><b>' + esc(DAY_LABEL[D.weekdayCode(new Date(d + 'T00:00:00'))] || d) + '</b> ' +
+          (bits.length ? bits.map(esc).join(' · ') : '<span class="muted">off</span>') + '</span><span class="sp tnum">' + esc(d.slice(5)) + '</span></li>';
+      }).join('') + '</ul>'
+    : '<div class="micro muted">The day map arrives with the week plan.</div>';
 }
 
 function renderWeek() {
@@ -884,7 +960,7 @@ function dayLog() {
   (S.db.extras[D.today()] || []).forEach(x => lines.push('- ＋ ' + D.hhmm(x.at) + ' ' + x.text + (x.minutes ? ' (' + dur(x.minutes) + ')' : '')));
   const w = weekProgress();
   lines.push('Week ' + w.done + '/' + w.n + ' rituals');
-  (S.plan.goals || []).slice(0, 3).forEach(g => lines.push('- ' + g.project + ': ' + (g.detail || g.headline || '')));
+  (S.plan.goals ? goalList().filter(g => !isCompletion(g)) : []).slice(0, 3).forEach(g => lines.push('- ' + g.project + ': ' + (g.detail || g.headline || '')));
   return lines.join('\n');
 }
 
@@ -910,6 +986,7 @@ function tab(name) {
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
   document.getElementById('view-today').hidden = name !== 'today';
   document.getElementById('view-week').hidden = name !== 'week';
+  document.getElementById('view-plan').hidden = name !== 'plan';
   document.getElementById('view-ritual').hidden = name !== 'ritual';
   document.getElementById('view-summary').hidden = name !== 'summary';
   window.scrollTo({ top: 0 });
@@ -918,6 +995,14 @@ function openRitual(id) {
   S.ritualId = id;
   tab('ritual'); renderAll();
 }
+
+/* typing in the goal editor edits the draft in place; Save writes it out */
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (!el || el.dataset.gi == null || !S.editingGoals || !S.draft) return;
+  const i = Number(el.dataset.gi), f = el.dataset.gf;
+  if (S.draft[i] && f) S.draft[i][f] = el.value;
+});
 
 document.addEventListener('click', e => {
   const t = e.target.closest('button, .row-ritual, .toggle, [data-xdel]');
@@ -952,6 +1037,34 @@ document.addEventListener('click', e => {
     if (!tx) return toast('Write what you did first');
     addExtra(D.today(), tx, mn);
     document.getElementById('x-text').value = ''; document.getElementById('x-min').value = '';
+    return;
+  }
+  /* the Plan tab's goal editor */
+  if (t.id === 'goal-edit') { S.draft = goalList().map(g => Object.assign({}, g)); S.editingGoals = true; renderAll(); return; }
+  if (t.id === 'goal-cancel') { S.editingGoals = false; S.draft = null; renderAll(); return; }
+  if (t.id === 'goal-add') {
+    S.draft = (S.draft || []).concat([{ project: '', headline: '', detail: '' }]);
+    renderAll();
+    const boxes = document.querySelectorAll('#plan-goals input[data-gf=project]');
+    if (boxes.length) boxes[boxes.length - 1].focus();
+    return;
+  }
+  if (t.dataset.gdel != null && S.editingGoals) { S.draft.splice(Number(t.dataset.gdel), 1); renderAll(); return; }
+  if (t.id === 'goal-save') {
+    const clean = (S.draft || []).map(g => ({
+      project: String(g.project || '').trim(), headline: String(g.headline || '').trim(), detail: String(g.detail || '').trim()
+    })).filter(g => g.project || g.detail);
+    if (clean.length) S.db.edits = { goals: clean, ts: Date.now() };
+    else delete S.db.edits;
+    S.editingGoals = false; S.draft = null;
+    save(); markDirty(); renderAll();
+    toast(clean.length ? 'Goals saved — shared log updated' : 'Cleared — back to the plan');
+    return;
+  }
+  if (t.id === 'goal-reset') {
+    delete S.db.edits;
+    save(); markDirty(); renderAll();
+    toast('Back to the generated plan');
     return;
   }
   if (t.dataset.xdel != null) return removeExtra(D.today(), Number(t.dataset.xdel));

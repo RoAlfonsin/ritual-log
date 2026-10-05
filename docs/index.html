@@ -65,6 +65,36 @@
     </div>
   </section>
 
+  <section id="view-plan" hidden>
+    <div class="card">
+      <div class="card-head" id="plan-head"></div>
+      <div class="micro muted" style="margin-bottom:6px">Where the week stands — finished tickets over the total.</div>
+      <div id="plan-completion"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <span class="k">Week goals</span><span class="spacer"></span>
+        <span class="micro muted" id="plan-goals-note"></span>
+      </div>
+      <div id="plan-goals"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="b sm" id="goal-edit">Edit</button>
+        <button class="b sm" id="goal-save" hidden>Save</button>
+        <button class="b sm ghost" id="goal-cancel" hidden>Cancel</button>
+        <button class="b sm ghost" id="goal-reset" hidden>Reset to the plan</button>
+      </div>
+      <div class="micro muted" style="margin-top:10px">Edits are kept in the shared log, so both devices see them. The next weekly plan rebuild does not overwrite them.</div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="k">Anchors</span></div>
+      <div id="plan-anchors"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="k">Day map</span></div>
+      <div id="plan-daymap"></div>
+    </div>
+  </section>
+
   <section id="view-ritual" hidden>
     <div class="row" id="rv-nav" style="margin-bottom:12px"></div>
     <div class="card">
@@ -129,6 +159,7 @@
   <div class="wrap">
     <button data-tab="today" aria-selected="true">Today</button>
     <button data-tab="week" aria-selected="false">Week</button>
+    <button data-tab="plan" aria-selected="false">Plan</button>
     <button data-tab="ritual" aria-selected="false">Ritual</button>
     <button data-tab="summary" aria-selected="false">Summary</button>
   </div>
