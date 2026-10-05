@@ -6,7 +6,7 @@
    ever touched — the shared gist and the #schedule webhook must always hit the
    network, and config.js (the webhook) is never cached. */
 
-const CACHE = 'ritual-log-v1';
+const CACHE = 'ritual-log-v2';
 const SHELL = ['./', './index.html', './styles.css', './app.js', './manifest.json',
   './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
@@ -29,6 +29,8 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;      /* gist, GitHub API, webhook */
   if (url.pathname.endsWith('/config.js')) return;      /* the webhook: network only */
+  if (url.pathname.endsWith('/plan.json')) return;      /* the plan: never from cache — the app
+                                                           caches it itself and warns when it is stale */
 
   e.respondWith(
     fetch(req)

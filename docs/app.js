@@ -36,7 +36,7 @@ const DAY_LABEL = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', 
 const FALLBACK_PLAN = { updated: null, week: { iso: '', label: '', start: null, end: null }, rituals: [], days: {}, goals: [], anchors: [] };
 
 const S = { plan: FALLBACK_PLAN, db: null, byId: {}, tab: 'today', ritualId: null, tick: null,
-  planError: null, sync: 'local', syncMsg: '', dirty: false, pushing: false };
+  planError: null, planFetch: { at: null, ok: false, error: '' }, sync: 'local', syncMsg: '', dirty: false, pushing: false };
 
 /* ---------- store ---------- */
 function loadDB() {
@@ -53,13 +53,24 @@ function token() { try { return localStorage.getItem(LS_TOKEN) || ''; } catch (e
 async function refreshPlan() {
   try {
     const res = await fetch('plan.json?t=' + Date.now(), { cache: 'no-store' });
-    if (!res.ok) { S.planError = 'HTTP ' + res.status; renderAll(); return; }
+    if (!res.ok) { S.planError = 'HTTP ' + res.status; S.planFetch = { at: S.planFetch.at, ok: false, error: 'HTTP ' + res.status }; renderAll(); return; }
     const p = await res.json();
-    if (!p || !p.rituals || !p.rituals.length) { S.planError = 'plan.json has no rituals'; renderAll(); return; }
+    if (!p || !p.rituals || !p.rituals.length) {
+      S.planError = 'plan.json has no rituals';
+      S.planFetch = { at: S.planFetch.at, ok: false, error: 'the plan came back empty' };
+      renderAll(); return;
+    }
     adoptPlan(p);
+    S.planFetch = { at: Date.now(), ok: true, error: '' };
     try { localStorage.setItem(LS_PLAN, JSON.stringify(p)); } catch (e) { S.planError = 'could not cache the plan'; }
     renderAll();
-  } catch (e) { S.planError = (e && e.message) ? e.message : String(e); renderAll(); }
+  } catch (e) {
+    /* Offline, or the server blinked: keep rendering the copy this device cached, but
+       say so — two devices on different plans is exactly how they drift apart. */
+    S.planError = (e && e.message) ? e.message : String(e);
+    S.planFetch = { at: S.planFetch.at, ok: false, error: S.planError };
+    renderAll();
+  }
 }
 function adoptPlan(p) {
   S.plan = p; S.planError = null;
@@ -526,7 +537,21 @@ function fallbackCopy(text, done) {
 }
 
 /* ---------- render ---------- */
-function renderAll() { renderHeader(); renderProgress(); renderToday(); renderWeek(); renderGoals(); renderRitual(); renderSummary(); renderChips(); }
+function renderAll() { renderHeader(); renderProgress(); renderToday(); renderWeek(); renderGoals(); renderRitual(); renderSummary(); renderPlanWarn(); renderChips(); }
+
+/* Two devices on two different plans is how they drift apart without anyone
+   noticing: this says out loud when the plan on screen is the cached one. */
+function renderPlanWarn() {
+  const el = document.getElementById('plan-warn');
+  if (!el) return;
+  const f = S.planFetch || {};
+  if (f.ok || !f.error) { el.hidden = true; el.innerHTML = ''; return; }
+  const w = S.plan.week || {};
+  const built = S.plan.updated ? ' (built ' + D.hhmm(Date.parse(S.plan.updated)) + ')' : '';
+  el.hidden = false;
+  el.innerHTML = '<div class="banner"><b>This is the plan cached on this device — ' + esc(w.iso || 'no week') + built + '.</b> ' +
+    'Could not refresh it (' + esc(f.error) + '). <button class="b sm ghost" id="plan-refresh">Refresh now</button></div>';
+}
 
 function renderHeader() {
   document.getElementById('clock').textContent = D.hhmm(Date.now());
@@ -865,6 +890,9 @@ function renderSummary() {
     ['Work today', workMinutes(list) ? dur(workMinutes(list)) : '—'],
     ['Week', w.done + '/' + w.n + ' rituals'],
     ['Week work', w.work ? dur(w.work) : '—'],
+    ['Plan', (S.plan.week && S.plan.week.iso ? S.plan.week.iso : '—') + (S.plan.updated ? ' · built ' + D.hhmm(Date.parse(S.plan.updated)) : '')],
+    ['Plan check', S.planFetch.ok ? 'refreshed ' + D.hhmm(S.planFetch.at)
+      : (S.planFetch.error ? 'failed — ' + S.planFetch.error : 'not checked yet')],
     ['To send', S.db.outbox.length ? S.db.outbox.length + ' line(s) queued' : 'nothing waiting'],
     ['Shared log', S.sync === 'synced' ? 'up to date' : S.sync === 'local' ? 'this device only' : (S.syncMsg || S.sync)],
     ['This device', standalone() ? 'installed app' : (isIOS() ? 'Safari tab — Share → Add to Home Screen' : 'browser tab — tap Install to add it')]
@@ -1080,6 +1108,7 @@ document.addEventListener('click', e => {
   }
   if (t.id === 'tok-clear') { localStorage.removeItem(LS_TOKEN); S.dirty = false; setSync('local', 'Not connected — this device only'); renderAll(); return; }
   if (t.id === 'sync-now') { S.dirty = true; return pull(); }
+  if (t.id === 'plan-refresh') { toast('Checking the plan…'); return refreshPlan(); }
   if (t.id === 'backup') return copyText(JSON.stringify(S.db), 'Backup copied');
   if (t.id === 'restore') {
     const raw = prompt('Paste the backup JSON:');
@@ -1190,6 +1219,6 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   showInstallChip();
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { if (S.dirty && token()) push(); return; }
-    flushOutbox(); renderAll(); if (token()) pull(); checkVersion();
+    flushOutbox(); renderAll(); if (token()) pull(); checkVersion(); refreshPlan();
   });
 })();
