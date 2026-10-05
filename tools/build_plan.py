@@ -126,6 +126,11 @@ def parse_week(path: Path):
                 parts = [p.strip() for p in head.split("—", 1)]
                 cur = {"name": parts[0], "sub": parts[1] if len(parts) > 1 else ""}
                 cur["goal"] = ""
+                # `## Project completion` is a list of one-line progress rows
+                # (`- **iCare — 9/47 · 19%** …`), not a section with a headline:
+                # each row becomes its own card so both numbers show.
+                cur["completion"] = parts[0].lower().startswith("project completion")
+                cur["bullets"] = []
                 sections.append(cur)
             continue
         if cur == "anchors" and line.startswith("- "):
@@ -135,6 +140,10 @@ def parse_week(path: Path):
         elif cur == "progress" and line.startswith("- "):
             progress.append(line[2:].strip())
         elif isinstance(cur, dict):
+            if cur.get("completion"):
+                if line.startswith("- "):
+                    cur["bullets"].append(strip_md(line[2:]))
+                continue
             if not cur["goal"] and "**" in line:
                 cur["goal"] = strip_md(line)
             if not cur.get("bullet") and line.startswith("- "):
@@ -142,6 +151,13 @@ def parse_week(path: Path):
 
     goals = []
     for s in sections:
+        if s.get("completion"):
+            for b in s["bullets"]:
+                pm = re.match(r"^(.+?)\s+—\s+(.*)$", b)
+                goals.append({"project": pm.group(1) if pm else "Completion",
+                              "headline": "completion",
+                              "detail": pm.group(2) if pm else b})
+            continue
         detail, status = s.get("bullet", ""), None
         for p in progress:
             pm = re.match(r"^\*\*(.+?)\s*—\s*(on track|at risk):?\*\*:?\s*(.*)$", p)

@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-04T20:12:30-06:00",
+  "updated": "2026-10-04T20:15:00-06:00",
   "source": {
     "week_file": "/home/ro/.hermes/state/schedule/weeks/2026-W41.md",
     "life_file": "/home/ro/.hermes/state/life/weeks/2026-W41.md"
@@ -1720,7 +1720,7 @@
       "work_a": "Mini Rituales M2-04",
       "work_b": "iCare 2.1",
       "anchors": [
-        "Thu Alexa — the weekly calls only: no work meetings this week, and the Iván sit-down is off."
+        "Thu Alexa"
       ]
     },
     "2026-10-09": {
@@ -1741,9 +1741,14 @@
   },
   "goals": [
     {
-      "project": "Project completion",
-      "headline": "",
-      "detail": "iCare — 9/47 · 19% (Fase 1: 8/13). Target W41: 14/47 · 30% — Fase 1 closed and signed off."
+      "project": "iCare",
+      "headline": "completion",
+      "detail": "9/47 · 19% (Fase 1: 8/13). Target W41: 14/47 · 30% — Fase 1 closed and signed off."
+    },
+    {
+      "project": "Mini Rituales",
+      "headline": "completion",
+      "detail": "19/99 · 19% (M1 Foundation ✅ closed). Target W41: 24/99 · 24% — M1-gate plus the first four of M2."
     },
     {
       "project": "iCare",
@@ -1764,6 +1769,6 @@
   "anchors": [
     "Mon Mamá + Papá",
     "Tue Moni + Nona",
-    "Thu Alexa — the weekly calls only: no work meetings this week, and the Iván sit-down is off."
+    "Thu Alexa"
   ]
 }
