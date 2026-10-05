@@ -233,7 +233,24 @@ function planMinutes(ritual) {
 /* ---------- rituals and runs ---------- */
 function ritualsOfDay(code) { return (S.plan.rituals || []).filter(r => r.day === code).sort((a, b) => a.order - b.order); }
 function anyDayRituals() { return (S.plan.rituals || []).filter(r => !r.day); }
-function scopeOf(ritual) { return ritual.day ? D.dateOfWeekday(ritual.day) : D.isoWeek(); }
+/* A ritual's scope is the date it belongs to **inside the plan's week** — never
+   "this weekday in the calendar week of today". On the Sunday the plan rolls over
+   those two disagree, and anchoring to today made last week's real runs (Fri 2 Oct,
+   Sat 3 Oct) show as already done inside the new week. With no plan loaded, or for a
+   weekday the plan does not carry, we fall back to today's week. */
+function planWeek() { return (S.plan && S.plan.week) || null; }
+function inPlanWeek() {
+  const w = planWeek(); if (!w) return false;
+  const t = D.today(); return t >= w.start && t <= w.end;
+}
+function dateInPlanWeek(code) {
+  const w = planWeek(), i = DAYS.indexOf(code);
+  if (!w || !w.start || i < 0) return D.dateOfWeekday(code);
+  const d = new Date(w.start + 'T00:00:00');
+  d.setDate(d.getDate() + i);
+  return D.key(d);
+}
+function scopeOf(ritual) { return ritual.day ? dateInPlanWeek(ritual.day) : ((planWeek() && planWeek().iso) || D.isoWeek()); }
 function runKeyOf(ritual) { return ritual.id + ':' + scopeOf(ritual); }
 function getRunFor(ritual, create = true) {
   const key = runKeyOf(ritual);
@@ -285,7 +302,13 @@ function ritualRunMinutes(ritual) {
   (ritual.steps || []).forEach(s => { el += stepElapsed(run, s.id); });
   return el / 60;
 }
-function dayIsPast(code) { return DAYS.indexOf(code) < DAYS.indexOf(D.weekdayCode()); }
+/* "Missed" means the day is already behind us — by date, not by weekday order. The
+   weekday-order test marked every day of a plan composed early (Sunday evening) as
+   missed, because every weekday sorts before Sunday. */
+function dayIsPast(code) {
+  const w = planWeek();
+  return (w && w.start ? dateInPlanWeek(code) : D.dateOfWeekday(code)) < D.today();
+}
 function todayRituals() { return ritualsOfDay(D.weekdayCode()); }
 function todayComplete() { const l = todayRituals(); return l.length > 0 && l.every(ritualDone); }
 function dayProgress(code) { const l = ritualsOfDay(code); return { done: l.filter(ritualDone).length, n: l.length }; }
@@ -563,12 +586,28 @@ function renderProgress() {
   if (!el) return;
   el.hidden = !(S.plan.rituals || []).length;
   const w = weekProgress();
-  el.innerHTML = pctBlock('Today', dayProgress(D.weekdayCode()), workMinutes(todayRituals())) +
-    pctBlock('This week', w, w.work);
+  const today = inPlanWeek()
+    ? pctBlock('Today', dayProgress(D.weekdayCode()), workMinutes(todayRituals()))
+    : '';
+  el.innerHTML = today + pctBlock('This week', w, w.work);
 }
 
 function renderToday() {
   const code = D.weekdayCode();
+  const w = planWeek();
+  /* The plan can name a week that has not started (the Sunday it is composed) or one
+     that is already over. Today then has no rituals of its own — say so instead of
+     listing the other week's day under today's date. */
+  if (w && w.start && !inPlanWeek()) {
+    const upcoming = D.today() < w.start;
+    document.getElementById('today-banner').innerHTML = '<div class="banner"><b>' +
+      esc(w.label || 'The plan') + (upcoming ? ' starts ' : ' ended ') + D.short(new Date(w.start + 'T00:00:00')) + '</b> — nothing is scheduled today. ' +
+      (upcoming ? 'This week’s rituals are in the Week tab.' : 'Compose the next week to start logging.') + '</div>';
+    document.getElementById('today-head').innerHTML =
+      '<span class="k">' + DAY_LABEL[code] + ' rituals</span><span class="spacer"></span><span class="badge n tnum">—</span>';
+    document.getElementById('today-list').innerHTML = '<div class="empty">No rituals today.</div>';
+    return;
+  }
   const list = ritualsOfDay(code);
   const p = dayProgress(code);
   const anchors = ((S.plan.days || {})[D.today()] || {}).anchors || [];
@@ -637,7 +676,7 @@ function renderRitual() {
   const doneSteps = steps.filter(s => ['completed', 'skipped'].indexOf(stepStatus(run, s.id)) >= 0).length;
   document.getElementById('rv-nav').innerHTML =
     '<button class="b sm ghost" data-tab="today">Today</button><button class="b sm ghost" data-tab="week">Week</button>';
-  kicker.textContent = ritual.day ? DAY_LABEL[ritual.day] + ' ritual · ' + scopeOf(ritual) : 'Any day this week · ' + D.isoWeek();
+  kicker.textContent = ritual.day ? DAY_LABEL[ritual.day] + ' ritual · ' + scopeOf(ritual) : 'Any day this week · ' + ((planWeek() && planWeek().iso) || D.isoWeek());
   document.getElementById('rv-title').textContent = ritual.title;
   document.getElementById('rv-pct').textContent = (steps.length ? Math.round((doneSteps / steps.length) * 100) : 0) + '%';
   document.getElementById('rv-state').textContent = state === 'active' ? 'active run' : state;
