@@ -1,14 +1,14 @@
 {
-  "updated": "2026-10-03T13:32:55-06:00",
+  "updated": "2026-10-04T20:12:30-06:00",
   "source": {
-    "week_file": "/home/ro/.hermes/state/schedule/weeks/2026-W40.md",
-    "life_file": "/home/ro/.hermes/state/life/weeks/2026-W40.md"
+    "week_file": "/home/ro/.hermes/state/schedule/weeks/2026-W41.md",
+    "life_file": "/home/ro/.hermes/state/life/weeks/2026-W41.md"
   },
   "week": {
-    "iso": "2026-W40",
-    "label": "Week 40",
-    "start": "2026-09-28",
-    "end": "2026-10-04",
+    "iso": "2026-W41",
+    "label": "Week 41",
+    "start": "2026-10-05",
+    "end": "2026-10-11",
     "reserve_saturday": false
   },
   "rituals": [
@@ -117,7 +117,7 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Huevos rancheros"
+      "note": "Eggs a la mexicana"
     },
     {
       "id": "mon-shave-1-3",
@@ -139,7 +139,7 @@
     {
       "id": "mon-work-a",
       "day": "mon",
-      "title": "Mon Work A · iCare 1.1–1.2.1",
+      "title": "Mon Work A · iCare — merge #56, then 1.11",
       "order": 8,
       "start": "10:30",
       "end": "13:30",
@@ -147,7 +147,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Mon Work A · iCare 1.1–1.2.1"
+          "title": "Mon Work A · iCare — merge #56, then 1.11"
         }
       ],
       "kind": "work"
@@ -174,12 +174,12 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Ejotes con huevo"
+      "note": "Tacos de tinga de pollo"
     },
     {
       "id": "mon-work-b",
       "day": "mon",
-      "title": "Mon Work B · Upwork — 2 items live",
+      "title": "Mon Work B · Mini Rituales — M1-gate / M2-01",
       "order": 10,
       "start": "15:30",
       "end": "19:00",
@@ -187,7 +187,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Mon Work B · Upwork — 2 items live"
+          "title": "Mon Work B · Mini Rituales — M1-gate / M2-01"
         }
       ],
       "kind": "work"
@@ -306,27 +306,10 @@
       ]
     },
     {
-      "id": "tue-full-litter-sand-change",
-      "day": "tue",
-      "title": "Tue Full litter sand change",
-      "order": 5,
-      "block": "Cleaning",
-      "block_window": "07:20–08:30",
-      "start": null,
-      "end": null,
-      "minutes": null,
-      "steps": [
-        {
-          "id": "main",
-          "title": "Tue Full litter sand change"
-        }
-      ]
-    },
-    {
       "id": "tue-exercise-meditation",
       "day": "tue",
       "title": "Tue Exercise + meditation",
-      "order": 6,
+      "order": 5,
       "start": "08:30",
       "end": "09:30",
       "minutes": 60,
@@ -341,7 +324,7 @@
       "id": "tue-breakfast",
       "day": "tue",
       "title": "Tue Breakfast",
-      "order": 7,
+      "order": 6,
       "start": "09:30",
       "end": "10:10",
       "minutes": 40,
@@ -359,13 +342,13 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Huevos revueltos con jamón"
+      "note": "French toast with ham and cheese"
     },
     {
       "id": "tue-hand-nails",
       "day": "tue",
       "title": "Tue Hand nails",
-      "order": 8,
+      "order": 7,
       "block": "Shower + grooming",
       "block_window": "10:10–10:30",
       "start": null,
@@ -381,15 +364,15 @@
     {
       "id": "tue-work-a",
       "day": "tue",
-      "title": "Tue Work A · iCare 1.3–1.6",
-      "order": 9,
+      "title": "Tue Work A · iCare 1.9 + 1.10",
+      "order": 8,
       "start": "10:30",
       "end": "13:30",
       "minutes": 180,
       "steps": [
         {
           "id": "main",
-          "title": "Tue Work A · iCare 1.3–1.6"
+          "title": "Tue Work A · iCare 1.9 + 1.10"
         }
       ],
       "kind": "work"
@@ -398,7 +381,7 @@
       "id": "tue-cook-dinner",
       "day": "tue",
       "title": "Tue Dinner",
-      "order": 10,
+      "order": 9,
       "start": "13:30",
       "end": "15:30",
       "minutes": 120,
@@ -416,20 +399,20 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Sopa de fideos con verduras"
+      "note": "Frijoles charros ligeros"
     },
     {
       "id": "tue-work-b",
       "day": "tue",
-      "title": "Tue Work B · Mini Rituales 01+02 (legacy repo)",
-      "order": 11,
+      "title": "Tue Work B · Mini Rituales M2-02",
+      "order": 10,
       "start": "15:30",
       "end": "19:00",
       "minutes": 210,
       "steps": [
         {
           "id": "main",
-          "title": "Tue Work B · Mini Rituales 01+02 (legacy repo)"
+          "title": "Tue Work B · Mini Rituales M2-02"
         }
       ],
       "kind": "work"
@@ -438,7 +421,7 @@
       "id": "tue-journaling",
       "day": "tue",
       "title": "Tue Journaling",
-      "order": 12,
+      "order": 11,
       "start": "19:00",
       "end": "19:30",
       "minutes": 30,
@@ -453,7 +436,7 @@
       "id": "tue-rest",
       "day": "tue",
       "title": "Tue Rest (games, Netflix, reading)",
-      "order": 13,
+      "order": 12,
       "start": "19:30",
       "end": "21:30",
       "minutes": 120,
@@ -468,7 +451,7 @@
       "id": "tue-lights-out",
       "day": "tue",
       "title": "Tue Lights out",
-      "order": 14,
+      "order": 13,
       "start": "21:30",
       "end": "",
       "minutes": null,
@@ -584,7 +567,7 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Quesadillas de queso con salsa"
+      "note": "Molletes"
     },
     {
       "id": "wed-shave-2-3",
@@ -606,7 +589,7 @@
     {
       "id": "wed-work-a",
       "day": "wed",
-      "title": "Wed Work A · iCare 1.7  (#55)",
+      "title": "Wed Work A · iCare 1.12",
       "order": 8,
       "start": "10:30",
       "end": "13:30",
@@ -614,7 +597,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Wed Work A · iCare 1.7  (#55)"
+          "title": "Wed Work A · iCare 1.12"
         }
       ],
       "kind": "work"
@@ -641,12 +624,12 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Frijoles charros ligeros"
+      "note": "Pollo en salsa verde"
     },
     {
       "id": "wed-work-b",
       "day": "wed",
-      "title": "Wed Work B · Iván 18:30",
+      "title": "Wed Work B · Mini Rituales M2-03 (no Iván slot — both blocks are work)",
       "order": 10,
       "start": "15:30",
       "end": "19:00",
@@ -654,7 +637,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Wed Work B · Iván 18:30"
+          "title": "Wed Work B · Mini Rituales M2-03 (no Iván slot — both blocks are work)"
         }
       ],
       "kind": "work"
@@ -712,15 +695,14 @@
       "title": "Thu Read (+ coffee at the end)",
       "order": 1,
       "start": "06:30",
-      "end": "07:00",
-      "minutes": 30,
+      "end": "07:20",
+      "minutes": 50,
       "steps": [
         {
           "id": "main",
           "title": "Thu Read (+ coffee at the end)"
         }
-      ],
-      "note": "half session"
+      ]
     },
     {
       "id": "thu-mop-floors",
@@ -728,7 +710,7 @@
       "title": "Thu Mop floors",
       "order": 2,
       "block": "Cleaning",
-      "block_window": "07:00–08:20",
+      "block_window": "07:20–08:30",
       "start": null,
       "end": null,
       "minutes": null,
@@ -745,7 +727,7 @@
       "title": "Thu Change bedsheets",
       "order": 3,
       "block": "Cleaning",
-      "block_window": "07:00–08:20",
+      "block_window": "07:20–08:30",
       "start": null,
       "end": null,
       "minutes": null,
@@ -762,7 +744,7 @@
       "title": "Thu Trash out (2/3)",
       "order": 4,
       "block": "Cleaning",
-      "block_window": "07:00–08:20",
+      "block_window": "07:20–08:30",
       "start": null,
       "end": null,
       "minutes": null,
@@ -779,7 +761,7 @@
       "title": "Thu Laundry 2 — put in",
       "order": 5,
       "block": "Cleaning",
-      "block_window": "07:00–08:20",
+      "block_window": "07:20–08:30",
       "start": null,
       "end": null,
       "minutes": null,
@@ -796,7 +778,7 @@
       "title": "Thu Cat litter — scoop",
       "order": 6,
       "block": "Cleaning",
-      "block_window": "07:00–08:20",
+      "block_window": "07:20–08:30",
       "start": null,
       "end": null,
       "minutes": null,
@@ -844,7 +826,7 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Chilaquiles"
+      "note": "Hard-boiled eggs and vegetables"
     },
     {
       "id": "thu-exfoliate",
@@ -866,7 +848,7 @@
     {
       "id": "thu-work-a",
       "day": "thu",
-      "title": "Thu Work A · Mini Rituales — M1-01…M1-10, M1-12, M1-18",
+      "title": "Thu Work A · Mini Rituales M2-04",
       "order": 10,
       "start": "10:30",
       "end": "13:30",
@@ -874,7 +856,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Thu Work A · Mini Rituales — M1-01…M1-10, M1-12, M1-18"
+          "title": "Thu Work A · Mini Rituales M2-04"
         }
       ],
       "kind": "work"
@@ -901,12 +883,12 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Tortitas de papa con queso"
+      "note": "Ejotes con huevo"
     },
     {
       "id": "thu-work-b",
       "day": "thu",
-      "title": "Thu Work B · Upwork",
+      "title": "Thu Work B · iCare 2.1",
       "order": 12,
       "start": "15:30",
       "end": "19:00",
@@ -914,7 +896,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Thu Work B · Upwork"
+          "title": "Thu Work B · iCare 2.1"
         }
       ],
       "kind": "work"
@@ -1069,7 +1051,7 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Quesadillas de frijol con queso"
+      "note": "Crepas de jamón y queso"
     },
     {
       "id": "fri-shave-3-3",
@@ -1091,7 +1073,7 @@
     {
       "id": "fri-work-a",
       "day": "fri",
-      "title": "Fri Work A · iCare — merge #56, then 1.11",
+      "title": "Fri Work A · iCare — 2.2 or whatever spills",
       "order": 8,
       "start": "10:30",
       "end": "13:30",
@@ -1099,7 +1081,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Fri Work A · iCare — merge #56, then 1.11"
+          "title": "Fri Work A · iCare — 2.2 or whatever spills"
         }
       ],
       "kind": "work"
@@ -1126,12 +1108,12 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Mustard chicken with rice"
+      "note": "Hotdogs"
     },
     {
       "id": "fri-work-b",
       "day": "fri",
-      "title": "Fri Work B · Mini Rituales — M1-11 + M1-13",
+      "title": "Fri Work B · week close-out against the two numbers",
       "order": 10,
       "start": "15:30",
       "end": "19:00",
@@ -1139,7 +1121,7 @@
       "steps": [
         {
           "id": "main",
-          "title": "Fri Work B · Mini Rituales — M1-11 + M1-13"
+          "title": "Fri Work B · week close-out against the two numbers"
         }
       ],
       "kind": "work"
@@ -1282,7 +1264,7 @@
           "title": "Cleaning"
         }
       ],
-      "note": "Enfrijoladas"
+      "note": "Sopa de fideos con verduras"
     },
     {
       "id": "sat-journaling",
@@ -1698,22 +1680,6 @@
       ]
     },
     {
-      "id": "weekly-full-litter-sand-change-due-this-week",
-      "day": null,
-      "title": "Full litter sand change  ⟵ due this week",
-      "order": 0,
-      "optional": true,
-      "minutes": null,
-      "start": null,
-      "end": null,
-      "steps": [
-        {
-          "id": "main",
-          "title": "Full litter sand change  ⟵ due this week"
-        }
-      ]
-    },
-    {
       "id": "weekly-dusting-appliance-cleaning-ad-hoc-only-what-you-flag",
       "day": null,
       "title": "Dusting / appliance cleaning — ad hoc, only what you flag",
@@ -1731,43 +1697,43 @@
     }
   ],
   "days": {
-    "2026-09-28": {
-      "work_a": "iCare 1.1–1.2.1",
-      "work_b": "Upwork — 2 items live",
+    "2026-10-05": {
+      "work_a": "iCare — merge #56, then 1.11",
+      "work_b": "Mini Rituales — M1-gate / M2-01",
       "anchors": [
         "Mon Mamá + Papá"
       ]
     },
-    "2026-09-29": {
-      "work_a": "iCare 1.3–1.6",
-      "work_b": "Mini Rituales 01+02 (legacy repo)",
+    "2026-10-06": {
+      "work_a": "iCare 1.9 + 1.10",
+      "work_b": "Mini Rituales M2-02",
       "anchors": [
         "Tue Moni + Nona"
       ]
     },
-    "2026-09-30": {
-      "work_a": "iCare 1.7  (#55)",
-      "work_b": "Iván 18:30",
+    "2026-10-07": {
+      "work_a": "iCare 1.12",
+      "work_b": "Mini Rituales M2-03 (no Iván slot — both blocks are work)",
       "anchors": []
     },
-    "2026-10-01": {
-      "work_a": "Mini Rituales — M1-01…M1-10, M1-12, M1-18",
-      "work_b": "Upwork",
+    "2026-10-08": {
+      "work_a": "Mini Rituales M2-04",
+      "work_b": "iCare 2.1",
       "anchors": [
-        "Thu Alexa"
+        "Thu Alexa — the weekly calls only: no work meetings this week, and the Iván sit-down is off."
       ]
     },
-    "2026-10-02": {
-      "work_a": "iCare — merge #56, then 1.11",
-      "work_b": "Mini Rituales — M1-11 + M1-13",
+    "2026-10-09": {
+      "work_a": "iCare — 2.2 or whatever spills",
+      "work_b": "week close-out against the two numbers",
       "anchors": []
     },
-    "2026-10-03": {
+    "2026-10-10": {
       "work_a": null,
       "work_b": null,
       "anchors": []
     },
-    "2026-10-04": {
+    "2026-10-11": {
       "work_a": null,
       "work_b": null,
       "anchors": []
@@ -1775,28 +1741,29 @@
   },
   "goals": [
     {
+      "project": "Project completion",
+      "headline": "",
+      "detail": "iCare — 9/47 · 19% (Fase 1: 8/13). Target W41: 14/47 · 30% — Fase 1 closed and signed off."
+    },
+    {
       "project": "iCare",
-      "headline": "Fase 1",
-      "detail": "Fase 1 8/13; #56 open, 1.11 unstarted.",
-      "status": "at_risk"
+      "headline": "close Fase 1",
+      "detail": "1.8 has been sitting in open PR #56 since Wednesday — merge it first."
     },
     {
       "project": "Mini Rituales",
-      "headline": "Milestone 1",
-      "detail": "M1 12/19; 7 tickets open, no block left.",
-      "status": "at_risk"
+      "headline": "open M2 (Local core)",
+      "detail": "Frontier: M1-gate (the autonomous milestone close-out), then M2-01 (domain models + zod schemas in `core`)"
     },
     {
       "project": "Upwork",
-      "headline": "one application a day",
-      "detail": "cadence held; app out, 5 live, 0 replies.",
-      "status": "on_track"
+      "headline": "",
+      "detail": "One application a day, chosen and submitted by the agent — no block needed"
     }
   ],
   "anchors": [
     "Mon Mamá + Papá",
     "Tue Moni + Nona",
-    "Thu Alexa",
-    "Mon 5 Oct 18:00 Mauricio"
+    "Thu Alexa — the weekly calls only: no work meetings this week, and the Iván sit-down is off."
   ]
 }
